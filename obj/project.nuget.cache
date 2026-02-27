@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "o5Ck7CyFZ8Q=",
+  "success": true,
+  "projectFilePath": "D:\\School\\Introduction to Software Engineering\\OrganizationProject\\OrganizationProject.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Currot\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.0\\communitytoolkit.mvvm.8.4.0.nupkg.sha512"
+  ],
+  "logs": []
+}
