@@ -10,6 +10,6 @@ public class NoteTests
     {
         var note = new Note("Test Note");
 
-        Assert.Equal("Test Note", note.Name);
+        Assert.Equal("Test Note", note.name);
     }
 }
