@@ -52,7 +52,7 @@ namespace OrganizationProject.Core.Entities
             }
         }
         //Takes a note from one position and puts it in another. For moving notes.
-        public void insertFrom(int fromIndex, int toIndex)
+        public void moveTo(int fromIndex, int toIndex)
         {
             //don't do anything if indexes are the same
             if (fromIndex == toIndex) { return; }

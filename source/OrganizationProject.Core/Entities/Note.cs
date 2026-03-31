@@ -3,7 +3,7 @@ namespace OrganizationProject.Core.Entities;
 public class Note
 {
     public Guid id { get; init; } = Guid.NewGuid();
-    public string name { get; private set; }
+    public string name { get; set; }
     public string description { get; set; } = "";
     public string color { get; set; } = "White";
     public List<ListModule> assignedLists { get; private set; }
@@ -54,7 +54,7 @@ public class Note
     }*/
     //this is where a note will assign itself or remove itself from the list of unassigned notes
     //commented out because the DataHolder class needs to initialize and have static reference to the unassigned notes list before this will work
-    public void checkAllModules()
+    private void checkAllModules()
     {
         ////are we in nothing? Then assign us to the unassigned list
         //if(assignedLists.Count==0/*&&assignedCalendars.Count==0*//*&&assignedTexts.Count==0*/)
