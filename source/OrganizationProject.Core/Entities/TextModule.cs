@@ -8,11 +8,24 @@ public class TextModule
 {
     private List<TextDocument> documents;
     private const int MaxDocuments = 150; //Our minimum is 100, so I just went 50% more
+    private static List<TextModule> TextModuleList {get; set; } = new(); //Will hold all instantiated modules for storage
+
+    //For a data holder class to get all text modules
+    public static List<TextModule> GetTextModules()
+    {
+        return TextModuleList;
+    }
+
+    //For a data holder to reset all text modules, will null protection
+    public static void SetTextModules(List<TextModule> textModules){
+        TextModuleList = textModules ?? new List<TextModule>();
+    }
 
     public TextModule()
     {
         //The list of documents for the note to have
         documents = new List<TextDocument>();
+        TextModuleList.Add(this);
     }
 
     //Adds a new document. Returns false if max documents reached or title exists
@@ -64,7 +77,7 @@ public class TextDocument
     public string Title { get; private set; }
     public string Content { get; private set; }
     public List<TextFormatting> Formatting { get; }
-    public List<NoteAssignment> NoteAssignments { get; }
+    public List<CommentAssignment> Comments { get; }
 
     public const int MaxLength = 1_500_000; //Our minimum was 1,000,000, so I went 50% more
 
@@ -73,7 +86,7 @@ public class TextDocument
         Title = title ?? throw new ArgumentNullException(nameof(title));
         Content = string.Empty;
         Formatting = new List<TextFormatting>();
-        NoteAssignments = new List<NoteAssignment>();
+        Comments = new List<CommentAssignment>();
     }
 
     //Text editing methods
@@ -83,7 +96,7 @@ public class TextDocument
         if (newContent.Length > MaxLength) throw new ArgumentException("Document exceeds max length");
         Content = newContent;
         Formatting.Clear();
-        NoteAssignments.Clear();
+        Comments.Clear();
     }
 
     public void AppendText(string text)
@@ -127,33 +140,30 @@ public class TextDocument
         Formatting.Add(new TextFormatting(startIndex, length, style));
     }
 
-    //Note assignment
-    public void AssignNoteToSection(int startIndex, int length, Note note)
+    public void AssignComment(int startIndex, int length, Comment comment)
     {
-        if (note == null) throw new ArgumentNullException(nameof(note));
+        if (comment == null) throw new ArgumentNullException(nameof(comment));
         if (startIndex < 0 || startIndex + length > Content.Length)
             throw new ArgumentOutOfRangeException();
-        NoteAssignments.Add(new NoteAssignment(startIndex, length, note));
+        Comments.Add(new CommentAssignment(startIndex, length, comment));
     }
 
-    public void RemoveNoteFromSection(Note note)
+    public void RemoveComment(Comment comment)
     {
-        NoteAssignments.RemoveAll(n => n.AssignedNote == note);
+        Comments.RemoveAll(c => c.AssignedComment == comment);
     }
 
-    public void ClearAllHighlights()
+    public void ClearAllComments()
     {
-        NoteAssignments.Clear();
+        Comments.Clear();
     }
 
-    public void AssignNoteByPattern(string pattern, Note note)
+    public void AssignCommentByPattern(string pattern, Comment comment)
     {
-        if (note == null) throw new ArgumentNullException(nameof(note));
+        if (comment == null) throw new ArgumentNullException(nameof(comment));
         var matches = Regex.Matches(Content, pattern);
         foreach (Match match in matches)
-        {
-            NoteAssignments.Add(new NoteAssignment(match.Index, match.Length, note));
-        }
+            Comments.Add(new CommentAssignment(match.Index, match.Length, comment));
     }
 }
 
@@ -180,17 +190,30 @@ public enum TextStyle
     Italic = 2
 }
 
-//Note assignment flag class
-public class NoteAssignment
+// Represents a comment on a section of text
+public class Comment
+{
+    public string Author { get; init; }
+    public string Text { get; set; }
+
+    public Comment(string author, string text)
+    {
+        Author = author;
+        Text = text ?? throw new ArgumentNullException(nameof(text));
+    }
+}
+
+// Maps a comment to a text section
+public class CommentAssignment
 {
     public int StartIndex { get; }
     public int Length { get; }
-    public Note AssignedNote { get; }
+    public Comment AssignedComment { get; }
 
-    public NoteAssignment(int startIndex, int length, Note note)
+    public CommentAssignment(int startIndex, int length, Comment comment)
     {
         StartIndex = startIndex;
         Length = length;
-        AssignedNote = note ?? throw new ArgumentNullException(nameof(note));
+        AssignedComment = comment ?? throw new ArgumentNullException(nameof(comment));
     }
 }
