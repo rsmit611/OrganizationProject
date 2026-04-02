@@ -9,7 +9,7 @@ public class Note
     public List<ListModule> assignedLists { get; private set; }
     bool unassigned = true;
     //public List<CalendarModule> assignedCalendars { get; private set; }
-    //public List<TextModule> assignedTexts { get; private set; }
+    public List<TextModule> assignedTexts { get; private set; }
     public Note(string name, string description="",string color="White")
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -20,7 +20,7 @@ public class Note
         this.color = color;
         assignedLists = new List<ListModule>();
         //assignedCalendars = new List<CalendarModule>();
-        //assignedTexts = new List<TextModule>();
+        assignedTexts = new List<TextModule>();
         //DataHolder.unassignedNotesList.AddNote(this);
     }
     //These will be called by the modules themselves so no duplicate protection is necessary
@@ -33,25 +33,29 @@ public class Note
     {
         assignedCalendars.Add(calendar);
     }*/
-    /*public void assign(TextModule text)
+    public void assign(TextModule text)
     {
         assignedTexts.Add(text);
-    }*/
+    }
+
     public void remove(ListModule list)
     {
         assignedLists.Remove(list);
         checkAllModules();
     }
+    
     /*public void remove(CalendarModule calendar)
     {
         assignedCalendars.Remove(calendar);
         checkAllModules();
-    }/*
-    /*public void remove(TextModule text)
+    }*/
+    
+    public void remove(TextModule text)
     {
         assignedTexts.Remove(text);
         checkAllModules();
-    }*/
+    }
+
     //this is where a note will assign itself or remove itself from the list of unassigned notes
     //commented out because the DataHolder class needs to initialize and have static reference to the unassigned notes list before this will work
     private void checkAllModules()
