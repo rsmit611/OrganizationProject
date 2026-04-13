@@ -90,7 +90,7 @@ public class TextDocument
     }
 
     //Text editing methods
-    public void EditContent(string newContent)
+    public void EditContent(string newContent) //This is for when the entire document is being replaced with text
     {
         if (newContent == null) throw new ArgumentNullException(nameof(newContent));
         if (newContent.Length > MaxLength) throw new ArgumentException("Document exceeds max length");
@@ -99,7 +99,7 @@ public class TextDocument
         Comments.Clear();
     }
 
-    public void AppendText(string text)
+    public void AppendText(string text) //Adding text to the end
     {
         if (text == null) throw new ArgumentNullException(nameof(text));
         if (Content.Length + text.Length > MaxLength)
@@ -107,13 +107,14 @@ public class TextDocument
         Content += text;
     }
 
-    public void InsertText(int index, string text)
+    public void InsertText(int index, string text) //Inserting text somewhere within the document
     {
         if (text == null) throw new ArgumentNullException(nameof(text));
         if (index < 0 || index > Content.Length) throw new ArgumentOutOfRangeException(nameof(index));
         if (Content.Length + text.Length > MaxLength)
             throw new ArgumentException("Document exceeds max length");
         Content = Content.Insert(index, text);
+        AdjustRanges(index, text.Length, false); //New AdjustRanges method to keep indexes intact
     }
 
     public void DeleteText(int startIndex, int length)
@@ -123,6 +124,7 @@ public class TextDocument
         if (length < 0 || startIndex + length > Content.Length)
             throw new ArgumentOutOfRangeException(nameof(length));
         Content = Content.Remove(startIndex, length);
+        AdjustRanges(startIndex, length, true); //New AdjustRanges method to keep indexes intact
     }
 
     //Title editing
@@ -165,6 +167,108 @@ public class TextDocument
         foreach (Match match in matches)
             Comments.Add(new CommentAssignment(match.Index, match.Length, comment));
     }
+
+    //Handling insertions and deletions for comments and formatting
+    //For where deletions intersect comments and formatting, we'll delete the formatting entirely, and comments will shift to where the deletion was.
+    //When insertions are done within formatting or comments, we'll just expand the range.
+    //Otherwise, everything will shift.
+
+    private void AdjustRanges(int index, int changeLength, bool isDeletion)
+    {
+        //Formatting logic
+        for (int i = Formatting.Count - 1; i >= 0; i--)
+        {
+            var f = Formatting[i];
+            int start = f.StartIndex;
+            int end = start + f.Length;
+
+            if (isDeletion) //If things are being deleted, formatting is out
+            {
+                int deleteEnd = index + changeLength;
+
+                if (end <= index) 
+                {
+                    //When our whole formatting is before the deletion, we do nothing
+                }
+                else if (deleteEnd <= start)
+                {
+                    //All formatting is after the delete, so we shift backwards
+                    Formatting[i] = new TextFormatting(start - changeLength, f.Length, f.Style);
+                }
+                else //All other cases are overlap. So we're removing 
+                {
+                    Formatting.RemoveAt(i);
+                }
+            }
+            else //Otherwise, shift as needed
+            {
+                if (index <= start)
+                {
+                    //Shift forward
+                    Formatting[i] = new TextFormatting(start + changeLength, f.Length, f.Style);
+                }
+                else if (index < end)
+                {
+                    //Insert inside, so expand formatting
+                    Formatting[i] = new TextFormatting(start, f.Length + changeLength, f.Style);
+                }
+            }
+        }
+        //Comment logic
+        for (int i = Comments.Count - 1; i >= 0; i--)
+        {
+            var c = Comments[i];
+            int start = c.StartIndex;
+            int end = start + c.Length;
+
+            if (isDeletion)
+            {
+                int deleteEnd = index + changeLength;
+
+                if (end <= index)
+                {
+                    //Comment before deletion, do nothing
+                }
+                else if (deleteEnd <= start)
+                {
+                    //Comment after deletion, so shift backward
+                    Comments[i] = new CommentAssignment(start - changeLength, c.Length, c.AssignedComment);
+                }
+                else
+                {
+                    //Overlap
+                    if (index <= start && deleteEnd >= end)
+                    {
+                        //Fully deleted, remove
+                        Comments.RemoveAt(i);
+                    }
+                    else
+                    {
+                        //Partial deletion, move to deletion boundary
+                        Comments[i] = new CommentAssignment(
+                            index,
+                            Math.Max(0, (end - changeLength) - index), //We have to shift the length so the end is still the same
+                            c.AssignedComment);
+                    }
+                }
+            }
+            else
+            {
+                if (index <= start)
+                {
+                    //Shift forward
+                    Comments[i] = new CommentAssignment(start + changeLength, c.Length, c.AssignedComment);
+                }
+                else if (index < end)
+                {
+                    //Insert inside, so expand
+                    Comments[i] = new CommentAssignment(start, c.Length + changeLength, c.AssignedComment);
+                }
+                //Otherwise we do nothing
+            }
+        }
+    }
+
 }
 
 //Formatting flags for text
