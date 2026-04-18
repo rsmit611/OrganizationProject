@@ -65,10 +65,9 @@ public class Note
         assignedCalendars.Remove(calendar);
         checkAllModules();
     }*/
-
     public void remove(TextDocument text)
     {
-        assignedTexts.Remove(text);
+        assignedDocuments.Remove(text);
         checkAllModules();
     }
 

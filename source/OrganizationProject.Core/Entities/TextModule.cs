@@ -8,24 +8,20 @@ public class TextModule
 {
     private List<TextDocument> documents;
     private const int MaxDocuments = 150; //Our minimum is 100, so I just went 50% more
-    //commented out because this should be handled entirely by data holder class
 
-    //private static List<TextModule> TextModuleList {get; set; } = new(); //Will hold all instantiated modules for storage
+    //For the data holder to get and save all the documents
+    public List<TextDocument> GetAllDocuments(){
+        return documents;
+    }
 
-    ////For a data holder class to get all text modules
-    //public static List<TextModule> GetTextModules()
-    //{
-    //    return TextModuleList;
-    //}
-
-    ////For a data holder to reset all text modules, will null protection
-    //public static void SetTextModules(List<TextModule> textModules){
-    //    TextModuleList = textModules ?? new List<TextModule>();
-    //}
+    //For the data holder to load all documents into a fresh module.
+    public void SetDocuments(List<TextDocument> docs){
+        documents = docs ?? new List<TextDocument>();
+    }
 
     public TextModule()
     {
-        //The list of documents for the note to have
+        //The list of documents for the module to have. We will only have one instantiated module, so this will be for the whole application
         documents = new List<TextDocument>();
     }
 
@@ -78,7 +74,7 @@ public class TextDocument
     public string Title { get; private set; }
     public string Content { get; private set; }
     public List<TextFormatting> Formatting { get; }
-    public List<CommentAssignment> Comments { get; }
+    public List<NoteAssignment> Notes { get; }
 
     public const int MaxLength = 1_500_000; //Our minimum was 1,000,000, so I went 50% more
 
@@ -87,7 +83,7 @@ public class TextDocument
         Title = title ?? throw new ArgumentNullException(nameof(title));
         Content = string.Empty;
         Formatting = new List<TextFormatting>();
-        Comments = new List<CommentAssignment>();
+        Notes = new List<NoteAssignment>();
     }
 
     //Text editing methods
@@ -97,7 +93,7 @@ public class TextDocument
         if (newContent.Length > MaxLength) throw new ArgumentException("Document exceeds max length");
         Content = newContent;
         Formatting.Clear();
-        Comments.Clear();
+        Notes.Clear();
     }
 
     public void AppendText(string text) //Adding text to the end
@@ -143,35 +139,35 @@ public class TextDocument
         Formatting.Add(new TextFormatting(startIndex, length, style));
     }
 
-    public void AssignComment(int startIndex, int length, Comment comment)
+    public void AssignNote(int startIndex, int length, Note note)
     {
-        if (comment == null) throw new ArgumentNullException(nameof(comment));
+        if (note == null) throw new ArgumentNullException(nameof(note));
         if (startIndex < 0 || startIndex + length > Content.Length)
             throw new ArgumentOutOfRangeException();
-        Comments.Add(new CommentAssignment(startIndex, length, comment));
+        Notes.Add(new NoteAssignment(startIndex, length, note));
     }
 
-    public void RemoveComment(Comment comment)
+    public void RemoveNote(Note note)
     {
-        Comments.RemoveAll(c => c.AssignedComment == comment);
+        Notes.RemoveAll(c => c.AssignedNote == note);
     }
 
-    public void ClearAllComments()
+    public void ClearAllNotes()
     {
-        Comments.Clear();
+        Notes.Clear();
     }
 
-    public void AssignCommentByPattern(string pattern, Comment comment)
+    public void AssignNoteByPattern(string pattern, Note note)
     {
-        if (comment == null) throw new ArgumentNullException(nameof(comment));
+        if (note == null) throw new ArgumentNullException(nameof(note));
         var matches = Regex.Matches(Content, pattern);
         foreach (Match match in matches)
-            Comments.Add(new CommentAssignment(match.Index, match.Length, comment));
+            Notes.Add(new NoteAssignment(match.Index, match.Length, note));
     }
 
-    //Handling insertions and deletions for comments and formatting
-    //For where deletions intersect comments and formatting, we'll delete the formatting entirely, and comments will shift to where the deletion was.
-    //When insertions are done within formatting or comments, we'll just expand the range.
+    //Handling insertions and deletions for notes and formatting
+    //For where deletions intersect notes and formatting, we'll delete the formatting entirely, and notes will shift to where the deletion was.
+    //When insertions are done within formatting or notes, we'll just expand the range.
     //Otherwise, everything will shift.
 
     private void AdjustRanges(int index, int changeLength, bool isDeletion)
@@ -215,10 +211,10 @@ public class TextDocument
                 }
             }
         }
-        //Comment logic
-        for (int i = Comments.Count - 1; i >= 0; i--)
+        //Note logic
+        for (int i = Notes.Count - 1; i >= 0; i--)
         {
-            var c = Comments[i];
+            var c = Notes[i];
             int start = c.StartIndex;
             int end = start + c.Length;
 
@@ -228,12 +224,12 @@ public class TextDocument
 
                 if (end <= index)
                 {
-                    //Comment before deletion, do nothing
+                    //Note before deletion, do nothing
                 }
                 else if (deleteEnd <= start)
                 {
-                    //Comment after deletion, so shift backward
-                    Comments[i] = new CommentAssignment(start - changeLength, c.Length, c.AssignedComment);
+                    //Note after deletion, so shift backward
+                    Notes[i] = new NoteAssignment(start - changeLength, c.Length, c.AssignedNote);
                 }
                 else
                 {
@@ -241,15 +237,15 @@ public class TextDocument
                     if (index <= start && deleteEnd >= end)
                     {
                         //Fully deleted, remove
-                        Comments.RemoveAt(i);
+                        Notes.RemoveAt(i);
                     }
                     else
                     {
                         //Partial deletion, move to deletion boundary
-                        Comments[i] = new CommentAssignment(
+                        Notes[i] = new NoteAssignment(
                             index,
                             Math.Max(0, (end - changeLength) - index), //We have to shift the length so the end is still the same
-                            c.AssignedComment);
+                            c.AssignedNote);
                     }
                 }
             }
@@ -258,12 +254,12 @@ public class TextDocument
                 if (index <= start)
                 {
                     //Shift forward
-                    Comments[i] = new CommentAssignment(start + changeLength, c.Length, c.AssignedComment);
+                    Notes[i] = new NoteAssignment(start + changeLength, c.Length, c.AssignedNote);
                 }
                 else if (index < end)
                 {
                     //Insert inside, so expand
-                    Comments[i] = new CommentAssignment(start, c.Length + changeLength, c.AssignedComment);
+                    Notes[i] = new NoteAssignment(start, c.Length + changeLength, c.AssignedNote);
                 }
                 //Otherwise we do nothing
             }
@@ -295,30 +291,18 @@ public enum TextStyle
     Italic = 2
 }
 
-// Represents a comment on a section of text
-public class Comment
-{
-    public string Author { get; init; }
-    public string Text { get; set; }
 
-    public Comment(string author, string text)
-    {
-        Author = author;
-        Text = text ?? throw new ArgumentNullException(nameof(text));
-    }
-}
-
-// Maps a comment to a text section
-public class CommentAssignment
+// Maps a note to a text section
+public class NoteAssignment
 {
     public int StartIndex { get; }
     public int Length { get; }
-    public Comment AssignedComment { get; }
+    public Note AssignedNote { get; }
 
-    public CommentAssignment(int startIndex, int length, Comment comment)
+    public NoteAssignment(int startIndex, int length,  Note note)
     {
         StartIndex = startIndex;
         Length = length;
-        AssignedComment = comment ?? throw new ArgumentNullException(nameof(comment));
+        AssignedNote = note ?? throw new ArgumentNullException(nameof(note));
     }
 }
