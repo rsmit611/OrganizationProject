@@ -8,24 +8,25 @@ public class TextModule
 {
     private List<TextDocument> documents;
     private const int MaxDocuments = 150; //Our minimum is 100, so I just went 50% more
-    private static List<TextModule> TextModuleList {get; set; } = new(); //Will hold all instantiated modules for storage
+    //commented out because this should be handled entirely by data holder class
 
-    //For a data holder class to get all text modules
-    public static List<TextModule> GetTextModules()
-    {
-        return TextModuleList;
-    }
+    //private static List<TextModule> TextModuleList {get; set; } = new(); //Will hold all instantiated modules for storage
 
-    //For a data holder to reset all text modules, will null protection
-    public static void SetTextModules(List<TextModule> textModules){
-        TextModuleList = textModules ?? new List<TextModule>();
-    }
+    ////For a data holder class to get all text modules
+    //public static List<TextModule> GetTextModules()
+    //{
+    //    return TextModuleList;
+    //}
+
+    ////For a data holder to reset all text modules, will null protection
+    //public static void SetTextModules(List<TextModule> textModules){
+    //    TextModuleList = textModules ?? new List<TextModule>();
+    //}
 
     public TextModule()
     {
         //The list of documents for the note to have
         documents = new List<TextDocument>();
-        TextModuleList.Add(this);
     }
 
     //Adds a new document. Returns false if max documents reached or title exists

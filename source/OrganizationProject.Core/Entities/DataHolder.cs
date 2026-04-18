@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 
 namespace OrganizationProject.Core.Entities
 {
@@ -13,14 +15,14 @@ namespace OrganizationProject.Core.Entities
         private float timeSinceLastSave;
         private float timeSinceLastBackup;
 
-        private readonly List<ListModule> allLists;
-        private readonly List<Note> allNotes;
-        private List<TextModule> allTextModules;
+        public List<ListModule> allLists;
+        public List<Note> allNotes;
+        public List<TextModule> allTextModules;
 
         // Uncomment when CalendarModule is added to the project.
         // private readonly List<CalendarModule> allCalendars;
 
-        private readonly ListModule unassignedNotesList;
+        public static ListModule unassignedNotesList;
 
         public DataHolder()
         {
@@ -29,39 +31,71 @@ namespace OrganizationProject.Core.Entities
 
             allLists = new List<ListModule>();
             allNotes = new List<Note>();
-            allTextModules = new List<TextModule>(TextModule.GetTextModules());
+            allTextModules = new List<TextModule>();
 
             // allCalendars = new List<CalendarModule>();
 
             unassignedNotesList = new ListModule();
         }
+        //copy constructor
+        public void copy(DataHolder other)
+        {
+            timeSinceLastSave = other.timeSinceLastSave;
+            timeSinceLastBackup = other.timeSinceLastBackup;
+            allLists = (List<ListModule>)other.AllLists;
+            allNotes= (List<Note>)other.AllNotes;
+            allTextModules=(List<TextModule>)other.AllTextModules;
+            backupCycle = other.backupCycle;
+            unassignedNotesList = other.UnassignedNotesList;
 
+
+        }
         public IReadOnlyList<ListModule> AllLists => allLists.AsReadOnly();
         public IReadOnlyList<Note> AllNotes => allNotes.AsReadOnly();
         public IReadOnlyList<TextModule> AllTextModules => allTextModules.AsReadOnly();
-        public ListModule UnassignedNotesList => unassignedNotesList;
+        public ListModule UnassignedNotesList;
 
         // public IReadOnlyList<CalendarModule> AllCalendars => allCalendars.AsReadOnly();
-
+        public int backupCycle=0;
+        public int maxBackups = 5;
         public void save()
         {
-            // TODO: Replace with real file persistence.
+            // TODO: figure out path
             timeSinceLastSave = 0f;
-            allTextModules = new List<TextModule>(TextModule.GetTextModules());
+            allTextModules = new List<TextModule>();
+            //assign the capital U unassigned notes list 
+            UnassignedNotesList = unassignedNotesList;
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            path = Path.Combine(path, "OmniNote", "save.txt");
+            File.WriteAllText(path,JsonSerializer.Serialize<DataHolder>(this));
         }
 
         public void load()
         {
-            // TODO: Replace with real loading logic.
-            TextModule.SetTextModules(allTextModules);
-            updateUnassignedNotesList();
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            path = Path.Combine(path, "OmniNote", "OmniSave.txt");
+            load(path);
+        }
+        public void load(string location)
+        {
+            copy(JsonSerializer.Deserialize<DataHolder>(location));
             timeSinceLastSave = 0f;
         }
-
         public void backup()
         {
             // TODO: Replace with real backup logic.
             timeSinceLastBackup = 0f;
+            backupCycle++;
+            //perform backup, backing it up to omninoteBackup(backupCycle)
+
+            //assign the capital U unassigned notes list 
+            UnassignedNotesList = unassignedNotesList;
+            string path = "idk/omninoteBackup"+backupCycle;
+            File.WriteAllText(path, JsonSerializer.Serialize<DataHolder>(this));
+            if (backupCycle>=maxBackups)
+            {
+                backupCycle = 0;
+            }
         }
 
         public void addNote(Note note)
@@ -70,7 +104,6 @@ namespace OrganizationProject.Core.Entities
             if (allNotes.Contains(note)) return;
 
             allNotes.Add(note);
-            updateUnassignedNotesList();
         }
 
         public void removeNote(Note note)
@@ -78,7 +111,6 @@ namespace OrganizationProject.Core.Entities
             if (note == null) throw new ArgumentNullException(nameof(note));
             if (!allNotes.Remove(note)) return;
 
-            removeFromUnassignedListIfPresent(note);
         }
 
         public void addList(ListModule list)
@@ -88,7 +120,6 @@ namespace OrganizationProject.Core.Entities
             if (allLists.Contains(list)) return;
 
             allLists.Add(list);
-            updateUnassignedNotesList();
         }
 
         public void removeList(ListModule list)
@@ -101,8 +132,6 @@ namespace OrganizationProject.Core.Entities
             {
                 note.remove(list);
             }
-
-            updateUnassignedNotesList();
         }
 
         public void addTextModule(TextModule textModule)
@@ -112,7 +141,6 @@ namespace OrganizationProject.Core.Entities
 
             allTextModules.Add(textModule);
             TextModule.SetTextModules(allTextModules);
-            updateUnassignedNotesList();
         }
 
         public void removeTextModule(TextModule textModule)
@@ -122,11 +150,10 @@ namespace OrganizationProject.Core.Entities
 
             foreach (var note in allNotes)
             {
-                note.remove(textModule);
+                note.remove(textM);
             }
 
             TextModule.SetTextModules(allTextModules);
-            updateUnassignedNotesList();
         }
 
         /*
@@ -152,46 +179,5 @@ namespace OrganizationProject.Core.Entities
             updateUnassignedNotesList();
         }
         */
-
-        public void updateUnassignedNotesList()
-        {
-            foreach (var note in allNotes)
-            {
-                bool assignedToList = note.assignedLists.Count > 0;
-                bool assignedToText = note.assignedTexts.Count > 0;
-                // bool assignedToCalendar = note.assignedCalendars.Count > 0;
-
-                bool isOnlyInUnassignedList =
-                    assignedToList &&
-                    note.assignedLists.Count == 1 &&
-                    note.assignedLists.Contains(unassignedNotesList);
-
-                bool shouldBeUnassigned = (!assignedToList && !assignedToText) || isOnlyInUnassignedList;
-                bool isAlreadyInUnassignedList = note.assignedLists.Contains(unassignedNotesList);
-
-                if (shouldBeUnassigned && !isAlreadyInUnassignedList)
-                {
-                    note.assign(unassignedNotesList);
-                    unassignedNotesList.AddNote(note);
-                }
-                else if (!shouldBeUnassigned && isAlreadyInUnassignedList)
-                {
-                    removeFromUnassignedListIfPresent(note);
-                }
-            }
-        }
-
-        private void removeFromUnassignedListIfPresent(Note note)
-        {
-            if (!note.assignedLists.Contains(unassignedNotesList))
-            {
-                return;
-            }
-
-            // Keep the note's assignedLists in sync because ListModule.RemoveNote(note)
-            // currently does not call note.remove(this).
-            note.remove(unassignedNotesList);
-            unassignedNotesList.RemoveNote(note);
-        }
     }
 }

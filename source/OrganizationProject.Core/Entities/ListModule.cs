@@ -46,6 +46,7 @@ namespace OrganizationProject.Core.Entities
             {
                 if (notes[i].note == note)
                 {
+                    notes[i].note.remove(this);
                     notes.RemoveAt(i);
                     return;
                 }
