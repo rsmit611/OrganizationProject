@@ -9,7 +9,12 @@ public class Note
     public List<ListModule> assignedLists { get; private set; }
     bool unassigned = true;
     //public List<CalendarModule> assignedCalendars { get; private set; }
-    public List<TextModule> assignedTexts { get; private set; }
+
+    //Notes will not have their own text module, so we instead of this
+    //  public List<TextModule> assignedTexts { get; private set; }
+    //We'll have it be a list of TextDocuments
+    public List<TextDocument> assignedDocuments{ get; private set; }
+
     public Note(string name, string description="",string color="White")
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -20,7 +25,7 @@ public class Note
         this.color = color;
         assignedLists = new List<ListModule>();
         //assignedCalendars = new List<CalendarModule>();
-        assignedTexts = new List<TextModule>();
+        assignedDocuments = new List<TextDocument>();
         //DataHolder.unassignedNotesList.AddNote(this);
     }
     //These will be called by the modules themselves so no duplicate protection is necessary
@@ -33,9 +38,10 @@ public class Note
     {
         assignedCalendars.Add(calendar);
     }*/
-    public void assign(TextModule text)
+    public void assign(TextDocument text)
     {
-        assignedTexts.Add(text);
+        assignedDocuments.Add(text);
+        checkAllModules();
     }
 
     public void remove(ListModule list)
@@ -50,9 +56,9 @@ public class Note
         checkAllModules();
     }*/
     
-    public void remove(TextModule text)
+    public void remove(TextDocument text)
     {
-        assignedTexts.Remove(text);
+        assignedDocuments.Remove(text);
         checkAllModules();
     }
 
@@ -61,13 +67,13 @@ public class Note
     private void checkAllModules()
     {
         ////are we in nothing? Then assign us to the unassigned list
-        //if(assignedLists.Count==0/*&&assignedCalendars.Count==0*//*&&assignedTexts.Count==0*/)
+        //if(assignedLists.Count==0/*&&assignedCalendars.Count==0*//*&&assignedDocuments.Count==0*/)
         //{
         //    DataHolder.unassignedNotesList.AddNote(this);
         //    unassigned = true;
         //}
         ////are we in something? besides the unassigned notes list
-        //else if (assignedLists.Count >= (1+assignedLists.Contains(DataHolder.unassignedNotesList)?1:0)/*|| assignedCalendars.Count >= 1*//*||assignedTexts.Count>=1*/)
+        //else if (assignedLists.Count >= (1+assignedLists.Contains(DataHolder.unassignedNotesList)?1:0)/*|| assignedCalendars.Count >= 1*//*||assignedDocuments.Count>=1*/)
         //{
         //    //if we are, mark us as not unassigned and remove us from that list
         //    unassigned = false;
