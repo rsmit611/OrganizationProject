@@ -13,6 +13,10 @@ public class TextModule
     public List<TextDocument> GetAllDocuments(){
         return documents;
     }
+    public void SetAllDocuments(List<TextDocument> texts)
+    {
+        documents = texts;
+    }
 
     //For the data holder to load all documents into a fresh module.
     public void SetDocuments(List<TextDocument> docs){
@@ -150,6 +154,7 @@ public class TextDocument
     public void RemoveNote(Note note)
     {
         Notes.RemoveAll(c => c.AssignedNote == note);
+        note.remove(this);
     }
 
     public void ClearAllNotes()

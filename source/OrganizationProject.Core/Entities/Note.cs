@@ -44,6 +44,11 @@ public class Note
         assignedLists.Remove(list);
         checkAllModules();
     }
+    public void remove(TextModule text)
+    {
+        assignedLists.Remove(text);
+        checkAllModules();
+    }
     public void unassignAll()
     {
         //note, this will create an infinite loop if a note somehow thinks it is assigned to a module while it is in reality not

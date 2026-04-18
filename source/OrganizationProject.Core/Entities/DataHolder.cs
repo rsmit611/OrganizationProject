@@ -17,8 +17,8 @@ namespace OrganizationProject.Core.Entities
 
         public List<ListModule> allLists;
         public List<Note> allNotes;
-        public List<TextModule> allTextModules;
-
+        public List<TextDocument> allTextModules =>textModule.GetAllDocuments();
+        public TextModule textModule;
         // Uncomment when CalendarModule is added to the project.
         // private readonly List<CalendarModule> allCalendars;
 
@@ -31,11 +31,12 @@ namespace OrganizationProject.Core.Entities
 
             allLists = new List<ListModule>();
             allNotes = new List<Note>();
-            allTextModules = new List<TextModule>();
+            //allTextModules = new List<TextModule>();
 
             // allCalendars = new List<CalendarModule>();
 
             unassignedNotesList = new ListModule();
+            textModule=new TextModule();
         }
         //copy constructor
         public void copy(DataHolder other)
@@ -44,7 +45,7 @@ namespace OrganizationProject.Core.Entities
             timeSinceLastBackup = other.timeSinceLastBackup;
             allLists = (List<ListModule>)other.AllLists;
             allNotes= (List<Note>)other.AllNotes;
-            allTextModules=(List<TextModule>)other.AllTextModules;
+            textModule.SetAllDocuments((List<TextDocument>) other.AllTextModules);
             backupCycle = other.backupCycle;
             unassignedNotesList = other.UnassignedNotesList;
 
@@ -52,7 +53,7 @@ namespace OrganizationProject.Core.Entities
         }
         public IReadOnlyList<ListModule> AllLists => allLists.AsReadOnly();
         public IReadOnlyList<Note> AllNotes => allNotes.AsReadOnly();
-        public IReadOnlyList<TextModule> AllTextModules => allTextModules.AsReadOnly();
+        public IReadOnlyList<TextDocument> AllTextModules => allTextModules.AsReadOnly();
         public ListModule UnassignedNotesList;
 
         // public IReadOnlyList<CalendarModule> AllCalendars => allCalendars.AsReadOnly();
@@ -60,9 +61,8 @@ namespace OrganizationProject.Core.Entities
         public int maxBackups = 5;
         public void save()
         {
-            // TODO: figure out path
             timeSinceLastSave = 0f;
-            allTextModules = new List<TextModule>();
+            
             //assign the capital U unassigned notes list 
             UnassignedNotesList = unassignedNotesList;
             string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -83,14 +83,14 @@ namespace OrganizationProject.Core.Entities
         }
         public void backup()
         {
-            // TODO: Replace with real backup logic.
             timeSinceLastBackup = 0f;
             backupCycle++;
             //perform backup, backing it up to omninoteBackup(backupCycle)
 
             //assign the capital U unassigned notes list 
             UnassignedNotesList = unassignedNotesList;
-            string path = "idk/omninoteBackup"+backupCycle;
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            path = Path.Combine(path, "OmniNote", "omninoteBackup"+backupCycle);
             File.WriteAllText(path, JsonSerializer.Serialize<DataHolder>(this));
             if (backupCycle>=maxBackups)
             {
