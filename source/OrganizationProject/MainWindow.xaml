@@ -5,8 +5,500 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OrganizationProject"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Organizer" Height="600" Width="900"
+        Background="#F5F6FA"
+        FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <local:PriorityToColorConverter x:Key="PriorityToColorConverter"/>
+
+        <Color x:Key="PrimaryColor">#5B6AF0</Color>
+        <Color x:Key="PrimaryHoverColor">#4757E8</Color>
+        <Color x:Key="SidebarBgColor">#1E2140</Color>
+        <Color x:Key="SidebarActiveColor">#5B6AF0</Color>
+        <Color x:Key="SuccessColor">#27AE60</Color>
+        <Color x:Key="ErrorColor">#E74C3C</Color>
+
+        <SolidColorBrush x:Key="PrimaryBrush"       Color="{StaticResource PrimaryColor}"/>
+        <SolidColorBrush x:Key="PrimaryHoverBrush"  Color="{StaticResource PrimaryHoverColor}"/>
+        <SolidColorBrush x:Key="SidebarBgBrush"     Color="{StaticResource SidebarBgColor}"/>
+        <SolidColorBrush x:Key="SidebarActiveBrush" Color="{StaticResource SidebarActiveColor}"/>
+        <SolidColorBrush x:Key="SuccessBrush"       Color="{StaticResource SuccessColor}"/>
+        <SolidColorBrush x:Key="ErrorBrush"         Color="{StaticResource ErrorColor}"/>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background"      Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground"      Value="White"/>
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="FontWeight"      Value="SemiBold"/>
+            <Setter Property="Padding"         Value="16,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource PrimaryHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DangerButtonStyle" TargetType="Button"
+               BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+            <Setter Property="Padding"    Value="10,6"/>
+        </Style>
+
+        <Style x:Key="NavButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background"  Value="Transparent"/>
+            <Setter Property="Foreground"  Value="#9099C8"/>
+            <Setter Property="FontSize"    Value="13"/>
+            <Setter Property="Cursor"      Value="Hand"/>
+            <Setter Property="Margin"      Value="0,2"/>
+            <Setter Property="GroupName"   Value="Navigation"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="NavBorder"
+                                Background="Transparent"
+                                CornerRadius="8"
+                                Margin="8,2"
+                                Padding="12,10">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="{TemplateBinding Tag}"
+                                           FontSize="16" Width="24"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{TemplateBinding Content}"
+                                           Margin="10,0,0,0"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="NavBorder" Property="Background" Value="#2A3060"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="NavBorder" Property="Background"
+                                        Value="{StaticResource SidebarActiveBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModuleCardStyle" TargetType="Border">
+            <Setter Property="Background"  Value="White"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding"     Value="20"/>
+            <Setter Property="Margin"      Value="0,0,0,12"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="8" ShadowDepth="1"
+                                      Color="#000000" Opacity="0.06"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="InputStyle" TargetType="TextBox">
+            <Setter Property="BorderBrush"     Value="#DDE1F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding"         Value="10,8"/>
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="Background"      Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="2"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ══ SIDEBAR ══ -->
+        <Border Grid.Column="0" Grid.RowSpan="2"
+                Background="{StaticResource SidebarBgBrush}">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="20,24,20,28">
+                    <TextBlock Text="📋" FontSize="28"/>
+                    <TextBlock Text="Organizer"
+                               Foreground="White" FontSize="18"
+                               FontWeight="Bold" Margin="0,4,0,0"/>
+                </StackPanel>
+                <TextBlock DockPanel.Dock="Top"
+                           Text="MODULES"
+                           Foreground="#5A6390" FontSize="10"
+                           FontWeight="Bold" Margin="20,0,0,8"/>
+                <StackPanel DockPanel.Dock="Top">
+                    <RadioButton Style="{StaticResource NavButtonStyle}"
+                                 Content="Dashboard" Tag="🏠"
+                                 IsChecked="True"
+                                 Checked="NavDashboard_Checked"/>
+                    <RadioButton Style="{StaticResource NavButtonStyle}"
+                                 Content="Calendar" Tag="📅"
+                                 Checked="NavCalendar_Checked"/>
+                    <RadioButton Style="{StaticResource NavButtonStyle}"
+                                 Content="Notes" Tag="📝"
+                                 Checked="NavNotes_Checked"/>
+                    <RadioButton Style="{StaticResource NavButtonStyle}"
+                                 Content="Lists" Tag="✅"
+                                 Checked="NavList_Checked"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ══ MAIN CONTENT ══ -->
+        <Grid Grid.Column="1" Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="White"
+                    BorderBrush="#E8EAF6" BorderThickness="0,0,0,1"
+                    Padding="24,14">
+                <Grid>
+                    <TextBlock x:Name="PageTitle" Text="Dashboard"
+                               FontSize="17" FontWeight="SemiBold"
+                               Foreground="#1E2140" VerticalAlignment="Center"/>
+                    <Button x:Name="BtnQuickAdd" Content="＋  Add New"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            HorizontalAlignment="Right"
+                            Click="BtnQuickAdd_Click"/>
+                </Grid>
+            </Border>
+
+            <ScrollViewer Grid.Row="1" Padding="24,20"
+                          VerticalScrollBarVisibility="Auto">
+                <Grid>
+
+                    <!-- ── DASHBOARD ── -->
+                    <StackPanel x:Name="PanelDashboard" Visibility="Visible">
+                        <TextBlock Text="Welcome back! Here's your overview."
+                                   FontSize="13" Foreground="#6B7280" Margin="0,0,0,16"/>
+                        <UniformGrid Columns="3" Margin="0,0,0,20">
+                            <Border Style="{StaticResource ModuleCardStyle}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="📅  Upcoming Events"
+                                               FontSize="12" Foreground="#6B7280"/>
+                                    <TextBlock x:Name="TxtEventCount" Text="0"
+                                               FontSize="28" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryBrush}"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource ModuleCardStyle}" Margin="4,0">
+                                <StackPanel>
+                                    <TextBlock Text="✅  Tasks Pending"
+                                               FontSize="12" Foreground="#6B7280"/>
+                                    <TextBlock x:Name="TxtTaskCount" Text="0"
+                                               FontSize="28" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryBrush}"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource ModuleCardStyle}" Margin="8,0,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="📝  Notes Saved"
+                                               FontSize="12" Foreground="#6B7280"/>
+                                    <TextBlock x:Name="TxtNoteCount" Text="0"
+                                               FontSize="28" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryBrush}"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                    </StackPanel>
+
+                    <!-- ── CALENDAR ── -->
+                    <StackPanel x:Name="PanelCalendar" Visibility="Collapsed">
+                        <Border Style="{StaticResource ModuleCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="New Event"
+                                           FontSize="14" FontWeight="SemiBold"
+                                           Foreground="#1E2140" Margin="0,0,0,14"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="160"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="TxtEventName"
+                                             Grid.Column="0"
+                                             Style="{StaticResource InputStyle}"
+                                             Margin="0,0,8,0"/>
+                                    <DatePicker x:Name="DpEventDate"
+                                                Grid.Column="1"
+                                                Margin="0,0,8,0"
+                                                FontSize="13"
+                                                BorderBrush="#DDE1F0"/>
+                                    <Button Grid.Column="2"
+                                            Content="＋ Add Event"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Click="BtnAddEvent_Click"/>
+                                </Grid>
+                                <TextBlock x:Name="TxtCalendarValidation"
+                                           Foreground="{StaticResource ErrorBrush}"
+                                           FontSize="12" Margin="0,8,0,0"
+                                           Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource ModuleCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Upcoming Events"
+                                           FontSize="14" FontWeight="SemiBold"
+                                           Foreground="#1E2140" Margin="0,0,0,12"/>
+                                <ListView x:Name="LvEvents"
+                                          BorderThickness="0" Background="Transparent">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Column="0" Background="#EEF0FD"
+                                                        CornerRadius="6" Padding="10,4"
+                                                        Margin="0,0,12,0">
+                                                    <TextBlock Text="{Binding Date, StringFormat=MMM dd}"
+                                                               FontSize="12"
+                                                               Foreground="{StaticResource PrimaryBrush}"
+                                                               FontWeight="SemiBold"/>
+                                                </Border>
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="13" Foreground="#1E2140"/>
+                                                <Button Grid.Column="2" Content="🗑"
+                                                        Style="{StaticResource DangerButtonStyle}"
+                                                        ToolTip="Delete event"
+                                                        Tag="{Binding}"
+                                                        Click="BtnDeleteEvent_Click"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                                <TextBlock x:Name="TxtNoEvents"
+                                           Text="No events yet — add one above."
+                                           Foreground="#9CA3AF" FontSize="13"
+                                           HorizontalAlignment="Center" Margin="0,16"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ── NOTES ── -->
+                    <StackPanel x:Name="PanelNotes" Visibility="Collapsed">
+                        <Border Style="{StaticResource ModuleCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="New Note"
+                                           FontSize="14" FontWeight="SemiBold"
+                                           Foreground="#1E2140" Margin="0,0,0,14"/>
+                                <TextBox x:Name="TxtNoteTitle"
+                                         Style="{StaticResource InputStyle}"
+                                         Margin="0,0,0,8"/>
+                                <TextBox x:Name="TxtNoteBody"
+                                         Style="{StaticResource InputStyle}"
+                                         Height="100" TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto"
+                                         Margin="0,0,0,12"/>
+                                <Button Content="💾  Save Note"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        HorizontalAlignment="Left"
+                                        Click="BtnSaveNote_Click"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource ModuleCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Saved Notes"
+                                           FontSize="14" FontWeight="SemiBold"
+                                           Foreground="#1E2140" Margin="0,0,0,12"/>
+                                <ListView x:Name="LvNotes"
+                                          BorderThickness="0" Background="Transparent">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#FAFBFF" CornerRadius="6"
+                                                    Padding="12,8" Margin="0,4">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0">
+                                                        <TextBlock Text="{Binding Title}"
+                                                                   FontWeight="SemiBold"
+                                                                   FontSize="13"
+                                                                   Foreground="#1E2140"/>
+                                                        <TextBlock Text="{Binding Content}"
+                                                                   FontSize="12"
+                                                                   Foreground="#6B7280"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1" Content="🗑"
+                                                            Style="{StaticResource DangerButtonStyle}"
+                                                            Tag="{Binding}"
+                                                            Click="BtnDeleteNote_Click"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ── LISTS ── -->
+                    <StackPanel x:Name="PanelList" Visibility="Collapsed">
+                        <Border Style="{StaticResource ModuleCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="New Task"
+                                           FontSize="14" FontWeight="SemiBold"
+                                           Foreground="#1E2140" Margin="0,0,0,14"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="130"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="TxtNewTask"
+                                             Grid.Column="0"
+                                             Style="{StaticResource InputStyle}"
+                                             Margin="0,0,8,0"/>
+                                    <ComboBox x:Name="CboPriority"
+                                              Grid.Column="1"
+                                              Margin="0,0,8,0"
+                                              FontSize="13" Padding="8,7"
+                                              SelectedIndex="1">
+                                        <ComboBoxItem Content="🔴  High"/>
+                                        <ComboBoxItem Content="🟡  Medium"/>
+                                        <ComboBoxItem Content="🟢  Low"/>
+                                    </ComboBox>
+                                    <Button Grid.Column="2"
+                                            Content="＋ Add Task"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Click="BtnAddTask_Click"/>
+                                </Grid>
+                                <TextBlock x:Name="TxtTaskValidation"
+                                           Foreground="{StaticResource ErrorBrush}"
+                                           FontSize="12" Margin="0,8,0,0"
+                                           Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource ModuleCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Tasks"
+                                           FontSize="14" FontWeight="SemiBold"
+                                           Foreground="#1E2140" Margin="0,0,0,12"/>
+                                <ListView x:Name="LvTasks"
+                                          BorderThickness="0" Background="Transparent">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,5">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <CheckBox Grid.Column="0"
+                                                          IsChecked="{Binding IsComplete}"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,10,0"
+                                                          Click="ChkTask_Click"/>
+                                                <Ellipse Grid.Column="1"
+                                                         Width="10" Height="10"
+                                                         Fill="{Binding priority, Converter={StaticResource PriorityToColorConverter}}"
+                                                         VerticalAlignment="Center"
+                                                         Margin="0,0,10,0"/>
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding note.name}"
+                                                           FontSize="13"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#1E2140">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsComplete}" Value="True">
+                                                                    <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                                                    <Setter Property="Foreground" Value="#9CA3AF"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <Button Grid.Column="3" Content="🗑"
+                                                        Style="{StaticResource DangerButtonStyle}"
+                                                        ToolTip="Delete task"
+                                                        Tag="{Binding}"
+                                                        Click="BtnDeleteTask_Click"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                                <TextBlock x:Name="TxtNoTasks"
+                                           Text="No tasks yet — add one above."
+                                           Foreground="#9CA3AF" FontSize="13"
+                                           HorizontalAlignment="Center" Margin="0,16"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ══ STATUS BAR ══ -->
+        <Border x:Name="StatusBar"
+                Grid.Column="1" Grid.Row="1"
+                Background="{StaticResource SuccessBrush}"
+                Padding="20,10" Visibility="Collapsed">
+            <Grid>
+                <TextBlock x:Name="TxtStatus" Text=""
+                           Foreground="White" FontSize="13"
+                           FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <Button Content="✕" Background="Transparent"
+                        Foreground="White" BorderThickness="0"
+                        FontSize="14" HorizontalAlignment="Right"
+                        Cursor="Hand" Click="BtnDismissStatus_Click"/>
+            </Grid>
+        </Border>
 
     </Grid>
 </Window>
