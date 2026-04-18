@@ -67,7 +67,7 @@ public class Note
     }*/
     public void remove(TextDocument text)
     {
-        assignedDocuments.Remove(text);
+        assignedTexts.Remove(text);
         checkAllModules();
     }
 
