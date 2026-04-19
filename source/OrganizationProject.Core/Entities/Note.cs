@@ -29,10 +29,10 @@ public class Note
         assignedLists.Add(list);
         checkAllModules();
     }
-    /*public void assign(CalendarModule calendar)
+    public void assign(CalendarModule calendar)
     {
         assignedCalendars.Add(calendar);
-    }*/
+    }
     public void assign(TextModule text)
     {
         assignedTexts.Add(text);
@@ -44,11 +44,11 @@ public class Note
         checkAllModules();
     }
     
-    /*public void remove(CalendarModule calendar)
+    public void remove(CalendarModule calendar)
     {
         assignedCalendars.Remove(calendar);
         checkAllModules();
-    }*/
+    }
     
     public void remove(TextModule text)
     {
