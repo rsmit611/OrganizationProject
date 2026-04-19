@@ -14,7 +14,9 @@ namespace OrganizationProject.Core.Entities
         public List<Note> allNotes;
         public List<TextDocument> allTextModules => textModule.GetAllDocuments();
         public TextModule textModule;
+
         public List<CalendarModule> allCalendars; 
+
 
         public static ListModule unassignedNotesList;
         public ListModule? UnassignedNotesList;
@@ -28,7 +30,9 @@ namespace OrganizationProject.Core.Entities
             timeSinceLastBackup = 0f;
             allLists = new List<ListModule>();
             allNotes = new List<Note>();
+
             allCalendars = new List<CalendarModule>();
+
             unassignedNotesList = new ListModule();
             textModule = new TextModule();
         }
@@ -40,7 +44,9 @@ namespace OrganizationProject.Core.Entities
             timeSinceLastBackup = other.timeSinceLastBackup;
             allLists = (List<ListModule>)other.AllLists;
             allNotes = (List<Note>)other.AllNotes;
+
             allCalendars = (List<CalendarModule>)other.AllCalendars;
+
             textModule.SetAllDocuments((List<TextDocument>)other.AllTextModules);
             backupCycle = other.backupCycle;
             UnassignedNotesList = other.UnassignedNotesList;
@@ -50,6 +56,7 @@ namespace OrganizationProject.Core.Entities
         public IReadOnlyList<Note> AllNotes => allNotes.AsReadOnly();
         public IReadOnlyList<TextDocument> AllTextModules => allTextModules.AsReadOnly();
         public IReadOnlyList<CalendarModule> AllCalendars => allCalendars.AsReadOnly();
+
 
         public void save()
         {
@@ -149,5 +156,6 @@ namespace OrganizationProject.Core.Entities
             foreach(var calNote in calendar.Notes.ToList())
                 calNote.Note.Remove(calendar);
         }
+
     }
 }

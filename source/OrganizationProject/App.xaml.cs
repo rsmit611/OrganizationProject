@@ -1,13 +1,21 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
+﻿using System.Windows;
+using OrganizationProject.Core.Entities;
 
-namespace OrganizationProject;
-
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
-public partial class App : Application
+namespace OrganizationProject
 {
-}
+    public partial class App : Application
+    {
+        public static DataHolder Data { get; private set; } = null!;
 
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            MessageBox.Show("Starting up...");
+            Data = new DataHolder();
+
+            if (Data.allLists.Count == 0)
+                Data.addList(new ListModule());
+
+            base.OnStartup(e); 
+        }
+    }
+}

@@ -9,6 +9,7 @@ namespace OrganizationProject.Core.Entities
     public class ListModule
     {
         List<ListNote> notes;
+        public IReadOnlyList<ListNote> Notes => notes.AsReadOnly();
         public ListModule()
         {
             notes = new List<ListNote>();
@@ -46,6 +47,7 @@ namespace OrganizationProject.Core.Entities
             {
                 if (notes[i].note == note)
                 {
+                    notes[i].note.remove(this);
                     notes.RemoveAt(i);
                     return;
                 }
@@ -75,6 +77,7 @@ namespace OrganizationProject.Core.Entities
     {
         public Note note;
         public ListPriority priority=ListPriority.None;
+        public bool IsComplete{get; set;} = false;
         public ListNote(Note baseNote)
         {
             note = baseNote;

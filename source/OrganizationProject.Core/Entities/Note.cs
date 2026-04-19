@@ -1,19 +1,16 @@
-namespace OrganizationProject.Core.Entities;
+using System;
+using System.Collections.Generic;
 
-public class Note
+namespace OrganizationProject.Core.Entities
 {
-    public Guid id { get; init; } = Guid.NewGuid();
-    public string name { get; set; }
-    public string description { get; set; } = "";
-    public string color { get; set; } = "White";
-    public List<ListModule> assignedLists { get; private set; }
-    bool unassigned = true;
-    //public List<CalendarModule> assignedCalendars { get; private set; }
-    public List<TextModule> assignedTexts { get; private set; }
-    public Note(string name, string description="",string color="White")
+    public class Note
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name cannot be empty.");
+        public Guid id { get; init; } = Guid.NewGuid();
+        public string name { get; set; }
+        public string description { get; set; } = "";
+        public string color { get; set; } = "White";
+        public List<ListModule> assignedLists { get; private set; }
+        public List<TextDocument> assignedTexts { get; private set; }
 
         this.name = name;
         this.description = description;
@@ -56,23 +53,61 @@ public class Note
         checkAllModules();
     }
 
-    //this is where a note will assign itself or remove itself from the list of unassigned notes
-    //commented out because the DataHolder class needs to initialize and have static reference to the unassigned notes list before this will work
-    private void checkAllModules()
-    {
-        ////are we in nothing? Then assign us to the unassigned list
-        //if(assignedLists.Count==0/*&&assignedCalendars.Count==0*//*&&assignedTexts.Count==0*/)
-        //{
-        //    DataHolder.unassignedNotesList.AddNote(this);
-        //    unassigned = true;
-        //}
-        ////are we in something? besides the unassigned notes list
-        //else if (assignedLists.Count >= (1+assignedLists.Contains(DataHolder.unassignedNotesList)?1:0)/*|| assignedCalendars.Count >= 1*//*||assignedTexts.Count>=1*/)
-        //{
-        //    //if we are, mark us as not unassigned and remove us from that list
-        //    unassigned = false;
-        //    DataHolder.unassignedNotesList.remove(this);
-        //}
-    }
+        public Note(string name, string description = "", string color = "White")
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Name cannot be empty.");
 
-}
+            this.name = name;
+            this.description = description;
+            this.color = color;
+            assignedLists = new List<ListModule>();
+            assignedTexts = new List<TextDocument>();
+            DataHolder.unassignedNotesList.AddNote(this);
+        }
+
+        public void assign(ListModule list)
+        {
+            assignedLists.Add(list);
+            checkAllModules();
+        }
+
+        public void assign(TextDocument text)
+        {
+            if (!assignedTexts.Contains(text)) assignedTexts.Add(text);
+            checkAllModules();
+        }
+
+        public void remove(ListModule list)
+        {
+            assignedLists.Remove(list);
+            checkAllModules();
+        }
+
+        public void remove(TextDocument text)
+        {
+            assignedTexts.Remove(text);
+            checkAllModules();
+        }
+
+        // TextModule-level removal is handled per-document — nothing to do here
+        public void remove(TextModule text) { }
+
+        public void unassignAll()
+        {
+            while (assignedLists != null && assignedLists.Count > 0)
+                assignedLists[0].RemoveNote(this);
+        }
+
+        private void checkAllModules()
+        {
+            if (assignedLists.Count == 0)
+            {
+                DataHolder.unassignedNotesList.AddNote(this);
+            }
+            else if (assignedLists.Count >= 1 + (assignedLists.Contains(DataHolder.unassignedNotesList) ? 1 : 0))
+            {
+                DataHolder.unassignedNotesList.RemoveNote(this);
+            }
+        }
+    }
