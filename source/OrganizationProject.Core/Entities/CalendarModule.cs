@@ -25,7 +25,7 @@ namespace OrganizationProject.Core.Entities
 
             var calendarNote = new CalendarNote(note, date, time, repeating);
             Notes.Add(calendarNote);
-            note.Assign(this); //Assign the calendar to the note 
+            note.assign(this); //Assign the calendar to the note 
             return true;
         }
 
@@ -35,7 +35,7 @@ namespace OrganizationProject.Core.Entities
             if (calendarNote != null)
             {
                 Notes.Remove(calendarNote);
-                note.Remove(this);
+                note.remove(this);
             }
         }
     }
@@ -75,11 +75,11 @@ namespace OrganizationProject.Core.Entities
     {
         //shows list as readonly view, loops through calendars and displays them but cant modify. 
         private const int MaxCalendars = 100;
-        private readonly List<Calendar> _calendars = new();
+        private readonly List<CalendarModule> _calendars = new();
 
-        public IReadOnlyList<Calendar> Calendars => _calendars.AsReadOnly();
+        public IReadOnlyList<CalendarModule> Calendars => _calendars.AsReadOnly();
 
-        public Calendar CreateCalendar(string name)
+        public CalendarModule CreateCalendar(string name)
         {
             //checks calendars limit if its at 100 
             if (_calendars.Count >= MaxCalendars)
@@ -87,7 +87,7 @@ namespace OrganizationProject.Core.Entities
                 throw new InvalidOperationException(
                     $"Cannot create more than {MaxCalendars} calendars.");
 
-            var calendar = new Calendar(name); //adds calendar 
+            var calendar = new CalendarModule(name); //adds calendar 
             _calendars.Add(calendar);
             return calendar;
         }
@@ -97,10 +97,10 @@ namespace OrganizationProject.Core.Entities
             var cal = _calendars.FirstOrDefault(cal => cal.Id == id)
             ?? throw new KeyNotFoundException(); //checks if calendar exists so it can delete it. if no match throws exception 
 
-
+            //might create an error from , we'll see
             foreach (var calendarNote in cal.Notes)
             {
-                calendarNote.note.Remove(cal); //Sets notes calendar id to empty so they dont belong to a calendar but arent deleted. 
+                calendarNote.Note.remove(cal); //Sets notes calendar id to empty so they dont belong to a calendar but arent deleted. 
             }
 
             _calendars.Remove(cal); //Remvoes the calendar object from the list. 
