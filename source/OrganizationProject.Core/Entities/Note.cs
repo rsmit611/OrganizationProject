@@ -11,7 +11,7 @@ namespace OrganizationProject.Core.Entities
         public string color { get; set; } = "White";
         public List<ListModule> assignedLists { get; private set; }
         public List<TextDocument> assignedTexts { get; private set; }
-        public List<CalendarModule> assignedCalendars;
+        public List<Calendar> assignedCalendars;
         public Note(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -20,7 +20,7 @@ namespace OrganizationProject.Core.Entities
             this.description = description;
             this.color = color;
             assignedLists = new List<ListModule>();
-            assignedCalendars = new List<CalendarModule>();
+            assignedCalendars = new List<Calendar>();
             assignedTexts = new List<TextDocument>();
             DataHolder.unassignedNotesList.AddNote(this);
         }
@@ -31,7 +31,7 @@ namespace OrganizationProject.Core.Entities
             assignedLists.Add(list);
             checkAllModules();
         }
-        public void assign(CalendarModule calendar)
+        public void assign(Calendar calendar)
         {
             assignedCalendars.Add(calendar);
         }
@@ -46,7 +46,7 @@ namespace OrganizationProject.Core.Entities
             checkAllModules();
         }
 
-        public void remove(CalendarModule calendar)
+        public void remove(Calendar calendar)
         {
             assignedCalendars.Remove(calendar);
             checkAllModules();

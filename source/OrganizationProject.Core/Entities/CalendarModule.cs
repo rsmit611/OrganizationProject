@@ -38,7 +38,7 @@ namespace OrganizationProject.Core.Entities
                 note.remove(this);
             }
         }
-        public IEnumerabke<CalendarNote> GetNotesOrganizedByDateTime()
+        public IEnumerable<CalendarNote> GetNotesOrganizedByDateTime()
         {
             return Notes.OrderBy(cn => cn.Date).ThenBy(cn => cn.Time);
         }
@@ -53,6 +53,8 @@ namespace OrganizationProject.Core.Entities
         public TimeSpan? Time { get; set; }  // null = no time assigned 
         public bool IsScheduled { get; set; } = false;
         public Repeating? Repeating { get; private set; }
+        public DateTime? NotificationDate { get; set; }
+        public TimeSpan? NotificationTime { get; set; }
 
         public CalendarNote(Note baseNote, DateTime? date, TimeSpan? time, RepeatingType? repeatingType = null)
         {
@@ -81,22 +83,22 @@ namespace OrganizationProject.Core.Entities
             NotificationTime = null;
         }
 
-    }
-    public void SetRepeatingSchedyle(RepeatingType type, List<DayOfWeek>? daysOfWeek = null, int interval = 1)
-    {
-        Repeating = new Repeating
+
+        public void SetRepeatingSchedule(RepeatingType type, List<DayOfWeek>? daysOfWeek = null, int interval = 1)
         {
-            Type = type,
-            daysOfWeek = daysOfWeek ?? new List<DayOfWeek>(),
-            interval = interval
-        };
-    }
+            Repeating = new Repeating
+            {
+                Type = type,
+                daysOfWeek = daysOfWeek ?? new List<DayOfWeek>(),
+                interval = interval
+            };
+        }
 
-    public void RemoveRepeatingSchedule()
-    {
-        Repeating = null;
+        public void RemoveRepeatingSchedule()
+        {
+            Repeating = null;
+        }
     }
-
     public class Repeating
     {
         public RepeatingType Type { get; set; }
@@ -111,9 +113,9 @@ namespace OrganizationProject.Core.Entities
     {
         //shows list as readonly view, loops through calendars and displays them but cant modify. 
         private const int MaxCalendars = 100;
-        private readonly List<CalendarModule> _calendars = new();
+        private readonly List<Calendar> _calendars = new();
 
-        public IReadOnlyList<CalendarModule> Calendars => _calendars.AsReadOnly();
+        public IReadOnlyList<Calendar> Calendars => _calendars.AsReadOnly();
 
 
         public class CreateManager { 
@@ -121,17 +123,20 @@ namespace OrganizationProject.Core.Entities
             private const int MinimumCapictyRequired = 100;
             private readonly List<Calendar> _calendars = new();
         }
-            public IReadOnlyListCalendar(string name)
-            {
-                var calendars = new Calendar(name);
-                _calendars.Add(calendar);
-                return calendar;
-            }
+
+        //commented out because this errors because it doesn't make any sense
+
+            //public CreateManager(string name)
+            //{
+            //    var calendars = new Calendar(name);
+            //    _calendars.Add(calendar);
+            //    return calendar;
+            //}
 
 
             public Calendar CreateCalendar(string name)
             {
-                var calendar = new CalendarModule(name); //adds calendar 
+                var calendar = new Calendar(name); //adds calendar 
                 _calendars.Add(calendar);
                 return calendar;
             }
@@ -144,7 +149,7 @@ namespace OrganizationProject.Core.Entities
 
 
 
-            foreach (var calendarNote in cal.Notes.ToList())
+            //foreach (var calendarNote in cal.Notes.ToList())
 
             //might create an error from , we'll see
             foreach (var calendarNote in cal.Notes)
