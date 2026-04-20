@@ -30,9 +30,7 @@ namespace OrganizationProject.Core.Entities
             timeSinceLastBackup = 0f;
             allLists = new List<ListModule>();
             allNotes = new List<Note>();
-
             allCalendars = new List<CalendarModule>();
-
             unassignedNotesList = new ListModule();
             textModule = new TextModule();
         }
@@ -44,9 +42,7 @@ namespace OrganizationProject.Core.Entities
             timeSinceLastBackup = other.timeSinceLastBackup;
             allLists = (List<ListModule>)other.AllLists;
             allNotes = (List<Note>)other.AllNotes;
-
             allCalendars = (List<CalendarModule>)other.AllCalendars;
-
             textModule.SetAllDocuments((List<TextDocument>)other.AllTextModules);
             backupCycle = other.backupCycle;
             UnassignedNotesList = other.UnassignedNotesList;
@@ -145,7 +141,7 @@ namespace OrganizationProject.Core.Entities
             if (calendar == null) throw new ArgumentNullException(nameof (calendar));
             if (allCalendars.Count >= 100)
                 throw new InvalidOperationException("Cannot create more than 100 calendars.");
-            if (allCalendars.contains(calendar)) return;
+            if (allCalendars.Contains(calendar)) return;
             allCalendars.Add(calendar);
         }
         public void removeCalendar(CalendarModule calendar)
@@ -154,7 +150,7 @@ namespace OrganizationProject.Core.Entities
             if (!allCalendars.Remove(calendar)) return;
 
             foreach(var calNote in calendar.Notes.ToList())
-                calNote.Note.Remove(calendar);
+                calNote.Note.remove(calendar);
         }
 
     }

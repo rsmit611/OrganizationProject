@@ -25,7 +25,7 @@ namespace OrganizationProject.Core.Entities
 
             var calendarNote = new CalendarNote(note, date, time, repeating);
             Notes.Add(calendarNote);
-            note.Assign(this); //Assign the calendar to the note 
+            note.assign(this); //Assign the calendar to the note 
             return true;
         }
 
@@ -35,7 +35,7 @@ namespace OrganizationProject.Core.Entities
             if (calendarNote != null)
             {
                 Notes.Remove(calendarNote);
-                note.Remove(this);
+                note.remove(this);
             }
         }
         public IEnumerabke<CalendarNote> GetNotesOrganizedByDateTime()
@@ -111,16 +111,16 @@ namespace OrganizationProject.Core.Entities
     {
         //shows list as readonly view, loops through calendars and displays them but cant modify. 
         private const int MaxCalendars = 100;
-        private readonly List<Calendar> _calendars = new();
+        private readonly List<CalendarModule> _calendars = new();
 
-        public IReadOnlyList<Calendar> Calendars => _calendars.AsReadOnly();
+        public IReadOnlyList<CalendarModule> Calendars => _calendars.AsReadOnly();
 
-        public class CreateManager
-        {
+
+        public class CreateManager { 
             //checks calendars limit if its at 100 
             private const int MinimumCapictyRequired = 100;
             private readonly List<Calendar> _calendars = new();
-
+        }
             public IReadOnlyListCalendar(string name)
             {
                 var calendars = new Calendar(name);
@@ -128,8 +128,14 @@ namespace OrganizationProject.Core.Entities
                 return calendar;
             }
 
-            
-        }
+
+            public Calendar CreateCalendar(string name)
+            {
+                var calendar = new CalendarModule(name); //adds calendar 
+                _calendars.Add(calendar);
+                return calendar;
+            }
+
 
         public void DeleteCalendar(Guid id)
         {
@@ -137,9 +143,14 @@ namespace OrganizationProject.Core.Entities
             ?? throw new KeyNotFoundException(); //checks if calendar exists so it can delete it. if no match throws exception 
 
 
+
             foreach (var calendarNote in cal.Notes.ToList())
+
+            //might create an error from , we'll see
+            foreach (var calendarNote in cal.Notes)
+
             {
-                calendarNote.note.Remove(cal); //Sets notes calendar id to empty so they dont belong to a calendar but arent deleted. 
+                calendarNote.Note.remove(cal); //Sets notes calendar id to empty so they dont belong to a calendar but arent deleted. 
             }
 
             _calendars.Remove(cal); //Remvoes the calendar object from the list. 
