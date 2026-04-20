@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace OrganizationProject.Core.Entities
 {
-    public class CalendarModule
+    public class Calendar
     {
         public Guid Id { get; } = Guid.NewGuid();
         public string Name { get; set; }
         public DateTime Created { get; } = DateTime.Now;
         public List<CalendarNote> Notes { get; } = new();
 
-        public CalendarModule(string name)
+        public Calendar(string name)
         {
             Name = name;
         }
@@ -38,6 +38,10 @@ namespace OrganizationProject.Core.Entities
                 note.Remove(this);
             }
         }
+        public IEnumerabke<CalendarNote> GetNotesOrganizedByDateTime()
+        {
+            return Notes.OrderBy(cn => cn.Date).ThenBy(cn => cn.Time);
+        }
     }
 
 
@@ -48,7 +52,7 @@ namespace OrganizationProject.Core.Entities
         public DateTime? Date { get; set; }  //null = date/only note
         public TimeSpan? Time { get; set; }  // null = no time assigned 
         public bool IsScheduled { get; set; } = false;
-        public Repeating? Repeating { get; set; }
+        public Repeating? Repeating { get; private set; }
 
         public CalendarNote(Note baseNote, DateTime? date, TimeSpan? time, RepeatingType? repeatingType = null)
         {
@@ -59,16 +63,48 @@ namespace OrganizationProject.Core.Entities
 
             if (repeatingType.HasValue)
             {
-                Repeating = new Repeating { Type = repeatingType.Value };
+                SetRepeatingSchedule(repeatingType.Value);
             }
         }
+
+        public void ScheduleNotification(DateTime notifyDate, TimeSpan notifyTime)
+        {
+            IsScheduled = true;
+            NotificationDate = notifyDate;
+            NotificationTime = notifyTime;
+        }
+
+        public void CancelNotification()
+        {
+            IsScheduled = false;
+            NotificationDate = null;
+            NotificationTime = null;
+        }
+
     }
+    public void SetRepeatingSchedyle(RepeatingType type, List<DayOfWeek>? daysOfWeek = null, int interval = 1)
+    {
+        Repeating = new Repeating
+        {
+            Type = type,
+            daysOfWeek = daysOfWeek ?? new List<DayOfWeek>(),
+            interval = interval
+        };
+    }
+
+    public void RemoveRepeatingSchedule()
+    {
+        Repeating = null;
+    }
+
     public class Repeating
     {
         public RepeatingType Type { get; set; }
-        public List<DayOfWeek> DaysOfWeek { get; set; } = new();
-        public int Interval { get; set; } = 1; //every 2 weeks 
+        public List<DayOfWeek> daysOfWeek { get; set; } = new(); // For SpecificDays type
+        public int interval { get; set; } = 1; // For Weekly, Monthly, Yearly types
     }
+
+
     public enum RepeatingType { Daily, SpecificDays, Weekly, Monthly, Yearly }
 
     public class CalendarRequirements
@@ -79,17 +115,20 @@ namespace OrganizationProject.Core.Entities
 
         public IReadOnlyList<Calendar> Calendars => _calendars.AsReadOnly();
 
-        public Calendar CreateCalendar(string name)
+        public class CreateManager
         {
             //checks calendars limit if its at 100 
-            if (_calendars.Count >= MaxCalendars)
+            private const int MinimumCapictyRequired = 100;
+            private readonly List<Calendar> _calendars = new();
 
-                throw new InvalidOperationException(
-                    $"Cannot create more than {MaxCalendars} calendars.");
+            public IReadOnlyListCalendar(string name)
+            {
+                var calendars = new Calendar(name);
+                _calendars.Add(calendar);
+                return calendar;
+            }
 
-            var calendar = new Calendar(name); //adds calendar 
-            _calendars.Add(calendar);
-            return calendar;
+            
         }
 
         public void DeleteCalendar(Guid id)
@@ -98,7 +137,7 @@ namespace OrganizationProject.Core.Entities
             ?? throw new KeyNotFoundException(); //checks if calendar exists so it can delete it. if no match throws exception 
 
 
-            foreach (var calendarNote in cal.Notes)
+            foreach (var calendarNote in cal.Notes.ToList())
             {
                 calendarNote.note.Remove(cal); //Sets notes calendar id to empty so they dont belong to a calendar but arent deleted. 
             }
