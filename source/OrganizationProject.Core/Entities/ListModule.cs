@@ -9,7 +9,7 @@ namespace OrganizationProject.Core.Entities
     public class ListModule
     {
         List<ListNote> notes;
-        public IReadOnlyList<ListNote> Notes => notes.AsReadOnly();
+        public List<ListNote> Notes => notes;
         public ListModule()
         {
             notes = new List<ListNote>();
