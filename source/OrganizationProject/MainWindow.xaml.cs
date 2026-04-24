@@ -105,21 +105,36 @@ namespace OrganizationProject
             set { Source.IsComplete = value; Notify(nameof(IsComplete)); }
         }
 
-        // !!!  =  High  |  !!  =  Medium  |  !  =  Low  |  –  =  None  (§2.2.3.2)
+        // Priority shown as text pill labels (inspired by NEXUS design)
         public string PriorityMarker => Source.priority switch
         {
-            ListPriority.High   => "!!!",
-            ListPriority.Medium => "!!",
-            ListPriority.Low    => "!",
-            _                   => "–"    // None / unset
+            ListPriority.High   => "High",
+            ListPriority.Medium => "Medium",
+            ListPriority.Low    => "Low",
+            _                   => ""
         };
 
+        public Visibility PriorityVisible => Source.priority == ListPriority.High ||
+                                             Source.priority == ListPriority.Medium ||
+                                             Source.priority == ListPriority.Low
+                                             ? Visibility.Visible : Visibility.Collapsed;
+
+        // Foreground text color for the pill
         public SolidColorBrush PriorityColor => Source.priority switch
         {
-            ListPriority.High   => new SolidColorBrush(Color.FromRgb(248, 113, 113)),
-            ListPriority.Medium => new SolidColorBrush(Color.FromRgb(251, 191,  36)),
-            ListPriority.Low    => new SolidColorBrush(Color.FromRgb(52,  211, 153)),
-            _                   => new SolidColorBrush(Color.FromRgb(75,  82,  128))  // muted gray for None
+            ListPriority.High   => new SolidColorBrush(Color.FromRgb(252, 165, 165)),
+            ListPriority.Medium => new SolidColorBrush(Color.FromRgb(253, 224, 133)),
+            ListPriority.Low    => new SolidColorBrush(Color.FromRgb(110, 231, 183)),
+            _                   => new SolidColorBrush(Color.FromRgb(100, 116, 139))
+        };
+
+        // Background color for the pill
+        public SolidColorBrush PriorityBackground => Source.priority switch
+        {
+            ListPriority.High   => new SolidColorBrush(Color.FromArgb(40, 239,  68,  68)),
+            ListPriority.Medium => new SolidColorBrush(Color.FromArgb(40, 245, 158,  11)),
+            ListPriority.Low    => new SolidColorBrush(Color.FromArgb(40,  52, 211, 153)),
+            _                   => new SolidColorBrush(Color.FromArgb(20, 100, 116, 139))
         };
     }
 
@@ -1025,7 +1040,6 @@ namespace OrganizationProject
             RbColorIndigo.IsChecked = true;
             RefreshNoteList();
             RefreshEventNoteCombo();
-            SyncUnassignedList();   // new note has no assignments → goes into Unassigned (§2.2.3.5)
             ShowStatus("Note saved!", true);
             UpdateDashboardCounts();
         }
@@ -1204,7 +1218,6 @@ namespace OrganizationProject
             _activeListIdx = Math.Max(0, _activeListIdx - 1);
             RefreshListSelector();
             RefreshTaskList();
-            SyncUnassignedList();        // notes that lost their last list go back to Unassigned
             RefreshNoteList();
             ShowStatus("List deleted.", false);
         }
@@ -1252,7 +1265,6 @@ namespace OrganizationProject
             TxtNewTask.Clear();
             CboPriority.SelectedIndex    = 0;
             TxtTaskValidation.Visibility = Visibility.Collapsed;
-            SyncUnassignedList();        // note is now in a list → remove from Unassigned if present
             RefreshTaskList();
             RefreshNoteList();
             ShowStatus("Task added!", true);
@@ -1267,7 +1279,6 @@ namespace OrganizationProject
                 // If the note has no remaining list assignments, remove from global store too
                 if (vm.Source.note.assignedLists.Count == 0)
                     App.Data.removeNote(vm.Source.note);
-                SyncUnassignedList();    // note may now be unassigned → move to auto list
                 RefreshTaskList();
                 RefreshNoteList();
                 ShowStatus("Task deleted.", false);

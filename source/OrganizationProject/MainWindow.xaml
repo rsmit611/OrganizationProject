@@ -5,23 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OrganizationProject"
         mc:Ignorable="d"
-        Title="Omni Note" Height="700" Width="1050"
-        Background="#0F1117" FontFamily="Segoe UI">
+        Title="" Height="700" Width="1050"
+        Background="#0B1120" FontFamily="Segoe UI">
 
     <Window.Resources>
         <local:PriorityToColorConverter x:Key="PriorityToColorConverter"/>
 
-        <!-- ── Dark Palette ── -->
-        <SolidColorBrush x:Key="PrimaryBrush"       Color="#818CF8"/>
-        <SolidColorBrush x:Key="PrimaryHoverBrush"  Color="#6366F1"/>
-        <SolidColorBrush x:Key="SidebarBgBrush"     Color="#090C14"/>
-        <SolidColorBrush x:Key="SidebarActiveBrush" Color="#3730A3"/>
-        <SolidColorBrush x:Key="SuccessBrush"       Color="#34D399"/>
-        <SolidColorBrush x:Key="ErrorBrush"         Color="#F87171"/>
-        <SolidColorBrush x:Key="CardBrush"          Color="#1A1F2E"/>
-        <SolidColorBrush x:Key="SurfaceBrush"       Color="#222840"/>
-        <SolidColorBrush x:Key="BorderBrush2"       Color="#252D45"/>
-        <SolidColorBrush x:Key="TextPrimaryBrush"   Color="#E2E8F0"/>
+        <!-- ── NEXUS-inspired Dark Palette ── -->
+        <SolidColorBrush x:Key="PrimaryBrush"       Color="#6366F1"/>
+        <SolidColorBrush x:Key="PrimaryHoverBrush"  Color="#4F46E5"/>
+        <SolidColorBrush x:Key="SidebarBgBrush"     Color="#0F172A"/>
+        <SolidColorBrush x:Key="SidebarActiveBrush" Color="#312E81"/>
+        <SolidColorBrush x:Key="SuccessBrush"       Color="#10B981"/>
+        <SolidColorBrush x:Key="ErrorBrush"         Color="#EF4444"/>
+        <SolidColorBrush x:Key="CardBrush"          Color="#1E293B"/>
+        <SolidColorBrush x:Key="SurfaceBrush"       Color="#273348"/>
+        <SolidColorBrush x:Key="BorderBrush2"       Color="#334155"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush"   Color="#F1F5F9"/>
         <SolidColorBrush x:Key="TextSecondaryBrush" Color="#94A3B8"/>
 
         <!-- ── Primary Button ── -->
@@ -132,8 +132,8 @@
                                 <Setter Property="Foreground" Value="#E2E8F0"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="NavBorder" Property="Background" Value="{StaticResource SidebarActiveBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="NavBorder" Property="Background" Value="#312E81"/>
+                                <Setter Property="Foreground" Value="#C7D2FE"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -141,13 +141,13 @@
             </Setter>
         </Style>
 
-        <!-- ── Dark Card ── -->
+        <!-- ── NEXUS-style Card ── -->
         <Style x:Key="ModuleCardStyle" TargetType="Border">
-            <Setter Property="Background"    Value="{StaticResource CardBrush}"/>
-            <Setter Property="CornerRadius"  Value="12"/>
-            <Setter Property="Padding"       Value="22"/>
-            <Setter Property="Margin"        Value="0,0,0,14"/>
-            <Setter Property="BorderBrush"   Value="#252D45"/>
+            <Setter Property="Background"      Value="{StaticResource CardBrush}"/>
+            <Setter Property="CornerRadius"    Value="10"/>
+            <Setter Property="Padding"         Value="20"/>
+            <Setter Property="Margin"          Value="0,0,0,12"/>
+            <Setter Property="BorderBrush"     Value="#334155"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
@@ -157,7 +157,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding"         Value="10,8"/>
             <Setter Property="FontSize"        Value="13"/>
-            <Setter Property="Background"      Value="#0F1117"/>
+            <Setter Property="Background"      Value="#0B1120"/>
             <Setter Property="Foreground"      Value="#E2E8F0"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -234,45 +234,52 @@
         </Grid.RowDefinitions>
 
         <!-- ══════════════════════════════════════════ -->
-        <!-- SIDEBAR                                    -->
+        <!-- SIDEBAR  (NEXUS-style)                     -->
         <!-- ══════════════════════════════════════════ -->
-        <Border Grid.Column="0" Grid.RowSpan="2" Background="{StaticResource SidebarBgBrush}">
+        <Border Grid.Column="0" Grid.RowSpan="2" Background="{StaticResource SidebarBgBrush}"
+                BorderBrush="#1E293B" BorderThickness="0,0,1,0">
             <DockPanel>
-                <!-- Logo / App title -->
-                <Border DockPanel.Dock="Top" Background="#0D1020"
-                        BorderBrush="#1A1F35" BorderThickness="0,0,0,1"
-                        Padding="20,26,20,22" Margin="0,0,0,8">
-                    <StackPanel>
-                        <TextBlock Text="🗒" FontSize="28" Foreground="#818CF8"/>
-                        <TextBlock Text="Omni Note" Foreground="#E2E8F0" FontSize="18"
-                                   FontWeight="Bold" Margin="0,8,0,0"/>
-                        <TextBlock Text="All your notes, one place." Foreground="#4B5580"
-                                   FontSize="10" Margin="0,3,0,0" FontStyle="Italic"/>
+
+                <!-- Logo – horizontal, like NEXUS ─────────────────── -->
+                <Border DockPanel.Dock="Top" Padding="18,20,18,18"
+                        BorderBrush="#1E293B" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="34" Height="34" CornerRadius="8"
+                                Background="#312E81">
+                            <TextBlock Text="🗒" FontSize="17"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="OmniNote" Foreground="#F1F5F9" FontSize="16"
+                                   FontWeight="Bold" VerticalAlignment="Center"
+                                   Margin="10,0,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <TextBlock DockPanel.Dock="Top" Text="M O D U L E S"
-                           Foreground="#3D4470" FontSize="9" FontWeight="Bold"
-                           Margin="22,4,0,6"/>
+                <!-- Section label ──────────────────────────────────── -->
+                <TextBlock DockPanel.Dock="Top" Text="MODULES"
+                           Foreground="#334155" FontSize="10" FontWeight="Bold"
+                           Margin="20,16,0,6"/>
 
+                <!-- Nav items ──────────────────────────────────────── -->
                 <StackPanel DockPanel.Dock="Top">
                     <RadioButton Style="{StaticResource NavButtonStyle}"
-                                 Content="Dashboard" Tag="🏠"
-                                 IsChecked="True"
-                                 Checked="NavDashboard_Checked"/>
+                                 Content="Dashboard" Tag="⊞"
+                                 IsChecked="True" Checked="NavDashboard_Checked"/>
                     <RadioButton Style="{StaticResource NavButtonStyle}"
-                                 Content="Calendar" Tag="📅"
+                                 Content="Calendar" Tag="◫"
                                  Checked="NavCalendar_Checked"/>
                     <RadioButton Style="{StaticResource NavButtonStyle}"
-                                 Content="Notes" Tag="📝"
+                                 Content="Notes" Tag="✎"
                                  Checked="NavNotes_Checked"/>
                     <RadioButton Style="{StaticResource NavButtonStyle}"
-                                 Content="Lists" Tag="✅"
+                                 Content="Lists" Tag="☑"
                                  Checked="NavList_Checked"/>
                     <RadioButton Style="{StaticResource NavButtonStyle}"
-                                 Content="Long Text" Tag="📄"
+                                 Content="Long Text" Tag="☰"
                                  Checked="NavLongText_Checked"/>
                 </StackPanel>
+
             </DockPanel>
         </Border>
 
@@ -285,27 +292,28 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Top header bar -->
-            <Border Grid.Row="0" Background="#1A1F2E"
-                    BorderBrush="#252D45" BorderThickness="0,0,0,1"
-                    Padding="24,14">
-                <TextBlock x:Name="PageTitle" Text="Dashboard"
-                           FontSize="17" FontWeight="SemiBold"
-                           Foreground="#E2E8F0" VerticalAlignment="Center"/>
+            <!-- Top header bar – NEXUS style ──────────── -->
+            <Border Grid.Row="0" Background="#1E293B"
+                    BorderBrush="#334155" BorderThickness="0,0,0,1"
+                    Padding="24,0">
+                <Grid Height="56">
+                    <TextBlock x:Name="PageTitle" Text="Dashboard"
+                               FontSize="18" FontWeight="SemiBold"
+                               Foreground="#F1F5F9" VerticalAlignment="Center"/>
+                </Grid>
             </Border>
 
             <!-- Scrollable panel area -->
-            <ScrollViewer Grid.Row="1" Padding="24,20"
-                          VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Grid.Row="1" Padding="20,16"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <Grid>
 
                     <!-- ════════════════════════════════ -->
                     <!-- DASHBOARD                        -->
                     <!-- ════════════════════════════════ -->
                     <StackPanel x:Name="PanelDashboard" Visibility="Visible">
-                        <TextBlock Text="Welcome back. Here's your overview."
-                                   FontSize="13" Foreground="#64748B" Margin="0,0,0,20"
-                                   FontStyle="Italic"/>
+                        <TextBlock Text="Good to see you. Here's your overview."
+                                   FontSize="13" Foreground="#64748B" Margin="0,0,0,16"/>
 
                         <!-- Stat cards -->
                         <UniformGrid Columns="3" Margin="0,0,0,16">
@@ -314,8 +322,8 @@
                                 <StackPanel>
                                     <TextBlock Text="📅  Events" FontSize="12" Foreground="#94A3B8"/>
                                     <TextBlock x:Name="TxtEventCount" Text="0"
-                                               FontSize="36" FontWeight="Bold"
-                                               Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/>
+                                               FontSize="32" FontWeight="Bold"
+                                               Foreground="#F1F5F9" Margin="0,4,0,0"/>
                                     <TextBlock Text="total scheduled" FontSize="11" Foreground="#64748B"/>
                                 </StackPanel>
                             </Border>
@@ -324,8 +332,8 @@
                                 <StackPanel>
                                     <TextBlock Text="✅  Tasks" FontSize="12" Foreground="#94A3B8"/>
                                     <TextBlock x:Name="TxtTaskCount" Text="0"
-                                               FontSize="36" FontWeight="Bold"
-                                               Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/>
+                                               FontSize="32" FontWeight="Bold"
+                                               Foreground="#F1F5F9" Margin="0,4,0,0"/>
                                     <TextBlock Text="still pending" FontSize="11" Foreground="#64748B"/>
                                 </StackPanel>
                             </Border>
@@ -334,172 +342,52 @@
                                 <StackPanel>
                                     <TextBlock Text="📝  Notes" FontSize="12" Foreground="#94A3B8"/>
                                     <TextBlock x:Name="TxtNoteCount" Text="0"
-                                               FontSize="36" FontWeight="Bold"
-                                               Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/>
+                                               FontSize="32" FontWeight="Bold"
+                                               Foreground="#F1F5F9" Margin="0,4,0,0"/>
                                     <TextBlock Text="saved" FontSize="11" Foreground="#64748B"/>
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
 
-                        <!-- Module info guide -->
+                        <!-- Quick-start tips -->
                         <Border Style="{StaticResource ModuleCardStyle}">
                             <StackPanel>
-                                <!-- Header -->
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
-                                    <TextBlock Text="ℹ" FontSize="16" Foreground="#818CF8"
-                                               VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                    <StackPanel>
-                                        <TextBlock Text="About Omni Note" FontSize="14"
-                                                   FontWeight="SemiBold" Foreground="#E2E8F0"/>
-                                        <TextBlock Text="Everything in one place — notes, calendars, lists, and long-form text."
-                                                   FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                </StackPanel>
-
-                                <!-- 4 module rows -->
-                                <Border Background="#0F1117" CornerRadius="10"
-                                        BorderBrush="#252D45" BorderThickness="1">
-                                    <StackPanel>
-
-                                        <!-- Calendar -->
-                                        <Grid Padding="16,14">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="36"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Border Grid.Column="0" Width="32" Height="32"
-                                                    Background="#1E1B4B" CornerRadius="8">
-                                                <TextBlock Text="📅" FontSize="15"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-                                            </Border>
-                                            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="Calendar" FontSize="13" FontWeight="SemiBold"
-                                                           Foreground="#E2E8F0"/>
-                                                <TextBlock FontSize="11" Foreground="#64748B" Margin="0,2,0,0"
-                                                           TextWrapping="Wrap">
-                                                    Schedule events on single days or date ranges. Optionally link any event to a saved note. Events show as dots on the calendar grid.
-                                                </TextBlock>
-                                            </StackPanel>
-                                            <Border Grid.Column="2" Background="#1E1B4B"
-                                                    CornerRadius="5" Padding="8,3"
-                                                    VerticalAlignment="Center" Margin="12,0,0,0">
-                                                <TextBlock Text="CALENDAR" FontSize="9"
-                                                           FontWeight="Bold" Foreground="#818CF8"/>
-                                            </Border>
-                                        </Grid>
-
-                                        <Border BorderBrush="#1A1F2E" BorderThickness="0,1,0,0" Margin="16,0"/>
-
-                                        <!-- Notes -->
-                                        <Grid Padding="16,14">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="36"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Border Grid.Column="0" Width="32" Height="32"
-                                                    Background="#14532D" CornerRadius="8">
-                                                <TextBlock Text="📝" FontSize="15"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-                                            </Border>
-                                            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="Notes" FontSize="13" FontWeight="SemiBold"
-                                                           Foreground="#E2E8F0"/>
-                                                <TextBlock FontSize="11" Foreground="#64748B" Margin="0,2,0,0"
-                                                           TextWrapping="Wrap">
-                                                    Create color-coded notes with names and descriptions. Notes are the shared data layer — assign them to calendars, lists, and long text documents simultaneously.
-                                                </TextBlock>
-                                            </StackPanel>
-                                            <Border Grid.Column="2" Background="#14532D"
-                                                    CornerRadius="5" Padding="8,3"
-                                                    VerticalAlignment="Center" Margin="12,0,0,0">
-                                                <TextBlock Text="NOTES" FontSize="9"
-                                                           FontWeight="Bold" Foreground="#34D399"/>
-                                            </Border>
-                                        </Grid>
-
-                                        <Border BorderBrush="#1A1F2E" BorderThickness="0,1,0,0" Margin="16,0"/>
-
-                                        <!-- Lists -->
-                                        <Grid Padding="16,14">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="36"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Border Grid.Column="0" Width="32" Height="32"
-                                                    Background="#422006" CornerRadius="8">
-                                                <TextBlock Text="✅" FontSize="15"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-                                            </Border>
-                                            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="Lists" FontSize="13" FontWeight="SemiBold"
-                                                           Foreground="#E2E8F0"/>
-                                                <TextBlock FontSize="11" Foreground="#64748B" Margin="0,2,0,0"
-                                                           TextWrapping="Wrap">
-                                                    Organise tasks across up to 100 named lists. Set priority (!!!·!!·!) on each task, reorder manually with ▲▼, or sort by priority, name, or date.
-                                                </TextBlock>
-                                            </StackPanel>
-                                            <Border Grid.Column="2" Background="#422006"
-                                                    CornerRadius="5" Padding="8,3"
-                                                    VerticalAlignment="Center" Margin="12,0,0,0">
-                                                <TextBlock Text="LISTS" FontSize="9"
-                                                           FontWeight="Bold" Foreground="#FBBF24"/>
-                                            </Border>
-                                        </Grid>
-
-                                        <Border BorderBrush="#1A1F2E" BorderThickness="0,1,0,0" Margin="16,0"/>
-
-                                        <!-- Long Text -->
-                                        <Grid Padding="16,14">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="36"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Border Grid.Column="0" Width="32" Height="32"
-                                                    Background="#1C1917" CornerRadius="8">
-                                                <TextBlock Text="📄" FontSize="15"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-                                            </Border>
-                                            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="Long Text" FontSize="13" FontWeight="SemiBold"
-                                                           Foreground="#E2E8F0"/>
-                                                <TextBlock FontSize="11" Foreground="#64748B" Margin="0,2,0,0"
-                                                           TextWrapping="Wrap">
-                                                    Write and format rich documents up to 1 million characters. Highlight words or sections, link them to notes, and auto-highlight using text patterns or regex.
-                                                </TextBlock>
-                                            </StackPanel>
-                                            <Border Grid.Column="2" Background="#1C1917"
-                                                    CornerRadius="5" Padding="8,3"
-                                                    VerticalAlignment="Center" Margin="12,0,0,0">
-                                                <TextBlock Text="LONG TEXT" FontSize="9"
-                                                           FontWeight="Bold" Foreground="#94A3B8"/>
-                                            </Border>
-                                        </Grid>
-
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Cross-module tip -->
-                                <Border Background="#1A2045" CornerRadius="8"
-                                        Padding="14,10" Margin="0,14,0,0"
-                                        BorderBrush="#3730A3" BorderThickness="1">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="💡" FontSize="14" VerticalAlignment="Top"
-                                                   Margin="0,0,10,0"/>
-                                        <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#A5B4FC">
-                                            <Run FontWeight="SemiBold">Cross-module tip: </Run>
-                                            <Run>Notes are shared across all modules. A note created in Lists can also be assigned to a Calendar date and highlighted inside a Long Text document — all at the same time. Deleting a note removes it everywhere.</Run>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </Border>
-
+                                <TextBlock Text="Quick Start" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="#F1F5F9" Margin="0,0,0,14"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#273348" CornerRadius="8" Padding="14" Margin="0,0,6,0">
+                                        <StackPanel>
+                                            <TextBlock Text="📅" FontSize="22"/>
+                                            <TextBlock Text="Calendar" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="#F1F5F9" Margin="0,6,0,3"/>
+                                            <TextBlock Text="Click a day on the calendar to schedule events."
+                                                       FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="1" Background="#0A2218" CornerRadius="8" Padding="14" Margin="3,0">
+                                        <StackPanel>
+                                            <TextBlock Text="📝" FontSize="22"/>
+                                            <TextBlock Text="Notes" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="#F1F5F9" Margin="0,6,0,3"/>
+                                            <TextBlock Text="Create color-coded notes to organize ideas."
+                                                       FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="2" Background="#221A08" CornerRadius="8" Padding="14" Margin="6,0,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="✅" FontSize="22"/>
+                                            <TextBlock Text="Lists" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="#F1F5F9" Margin="0,6,0,3"/>
+                                            <TextBlock Text="Make multiple task lists with High/Medium/Low priority."
+                                                       FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -521,7 +409,7 @@
                                         Style="{StaticResource GhostButtonStyle}"
                                         Padding="10,6" Click="BtnPrevMonth_Click"/>
                                 <TextBlock x:Name="TxtMonthYear" Grid.Column="1"
-                                           FontSize="17" FontWeight="Bold" Foreground="#E2E8F0"
+                                           FontSize="17" FontWeight="Bold" Foreground="#F1F5F9"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 <Button Grid.Column="2" Content=" ▶ "
                                         Style="{StaticResource GhostButtonStyle}"
@@ -535,19 +423,19 @@
                                 <!-- Day-of-week labels -->
                                 <UniformGrid Columns="7" Margin="0,0,0,4">
                                     <TextBlock Text="Sun" FontSize="11" FontWeight="Bold"
-                                               Foreground="#64748B" HorizontalAlignment="Center" Padding="0,4"/>
+                                               Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4"/>
                                     <TextBlock Text="Mon" FontSize="11" FontWeight="Bold"
-                                               Foreground="#64748B" HorizontalAlignment="Center" Padding="0,4"/>
+                                               Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4"/>
                                     <TextBlock Text="Tue" FontSize="11" FontWeight="Bold"
-                                               Foreground="#64748B" HorizontalAlignment="Center" Padding="0,4"/>
+                                               Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4"/>
                                     <TextBlock Text="Wed" FontSize="11" FontWeight="Bold"
-                                               Foreground="#64748B" HorizontalAlignment="Center" Padding="0,4"/>
+                                               Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4"/>
                                     <TextBlock Text="Thu" FontSize="11" FontWeight="Bold"
-                                               Foreground="#64748B" HorizontalAlignment="Center" Padding="0,4"/>
+                                               Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4"/>
                                     <TextBlock Text="Fri" FontSize="11" FontWeight="Bold"
-                                               Foreground="#64748B" HorizontalAlignment="Center" Padding="0,4"/>
+                                               Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4"/>
                                     <TextBlock Text="Sat" FontSize="11" FontWeight="Bold"
-                                               Foreground="#64748B" HorizontalAlignment="Center" Padding="0,4"/>
+                                               Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4"/>
                                 </UniformGrid>
                                 <!-- Day cells — filled from code-behind BuildCalendarGrid() -->
                                 <UniformGrid x:Name="CalendarDayGrid" Columns="7"/>
@@ -563,7 +451,7 @@
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <TextBlock Text="📅 " FontSize="14"/>
                                         <TextBlock x:Name="TxtSelectedDate"
-                                                   FontSize="14" FontWeight="SemiBold" Foreground="#E2E8F0"/>
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#F1F5F9"/>
                                     </StackPanel>
                                     <Button Content="✕ Deselect" Style="{StaticResource GhostButtonStyle}"
                                             HorizontalAlignment="Right" FontSize="11" Padding="10,5"
@@ -579,11 +467,7 @@
                                 <!-- Event name -->
                                 <TextBlock Text="Event Name" FontSize="11" Foreground="#94A3B8" Margin="0,0,0,4"/>
                                 <TextBox x:Name="TxtEventName" Style="{StaticResource InputStyle}"
-                                         Height="60" TextWrapping="Wrap"
-                                         AcceptsReturn="True"
-                                         VerticalScrollBarVisibility="Auto"
-                                         VerticalContentAlignment="Top"
-                                         Padding="10,8"
+                                         Height="36" VerticalContentAlignment="Center"
                                          Margin="0,0,0,10"/>
 
                                 <!-- Optional note link -->
@@ -598,7 +482,7 @@
                                               DisplayMemberPath="Note.name"
                                               FontSize="13" Padding="8,7"
                                               Margin="0,0,8,0" Height="36"
-                                              BorderBrush="#2A3050"/>
+                                              BorderBrush="#334155"/>
                                     <Button Grid.Column="1" Content="＋ Add Event"
                                             Style="{StaticResource PrimaryButtonStyle}"
                                             Click="BtnAddEvent_Click"/>
@@ -611,7 +495,7 @@
                                 <ItemsControl x:Name="IcDayEvents">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Background="#222840" CornerRadius="7"
+                                            <Border Background="#273348" CornerRadius="7"
                                                     Padding="12,8" Margin="0,3">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
@@ -625,13 +509,13 @@
                                                              VerticalAlignment="Center" Margin="0,0,10,0"/>
                                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding DisplayName}"
-                                                                   FontSize="13" Foreground="#E2E8F0"/>
+                                                                   FontSize="13" Foreground="#F1F5F9"/>
                                                         <TextBlock Text="{Binding DateLabel}"
                                                                    FontSize="10" Foreground="#64748B"
                                                                    Margin="0,1,0,0"/>
                                                     </StackPanel>
                                                     <!-- Note badge -->
-                                                    <Border Grid.Column="2" Background="#1A2045"
+                                                    <Border Grid.Column="2" Background="#1E3A5F"
                                                             CornerRadius="4" Padding="5,2" Margin="6,0"
                                                             Visibility="{Binding NoteBadgeVisibility}">
                                                         <TextBlock Text="📝 note" FontSize="10"
@@ -657,7 +541,7 @@
                         <Border Style="{StaticResource ModuleCardStyle}">
                             <StackPanel>
                                 <TextBlock Text="All Events" FontSize="14" FontWeight="SemiBold"
-                                           Foreground="#E2E8F0" Margin="0,0,0,12"/>
+                                           Foreground="#F1F5F9" Margin="0,0,0,12"/>
                                 <ItemsControl x:Name="IcAllEvents">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -669,14 +553,14 @@
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <Border Grid.Column="0" Background="#1A2045"
+                                                    <Border Grid.Column="0" Background="#1E3A5F"
                                                             CornerRadius="5" Padding="8,3" Margin="0,0,12,0">
                                                         <TextBlock Text="{Binding DateLabel}" FontSize="11"
                                                                    Foreground="{StaticResource PrimaryBrush}"
                                                                    FontWeight="SemiBold"/>
                                                     </Border>
                                                     <TextBlock Grid.Column="1" Text="{Binding DisplayName}"
-                                                               FontSize="13" Foreground="#E2E8F0"
+                                                               FontSize="13" Foreground="#F1F5F9"
                                                                VerticalAlignment="Center"/>
                                                     <Button Grid.Column="2" Content="🗑"
                                                             Style="{StaticResource DangerButtonStyle}"
@@ -704,7 +588,7 @@
                         <Border Style="{StaticResource ModuleCardStyle}">
                             <StackPanel>
                                 <TextBlock Text="New Note" FontSize="14" FontWeight="SemiBold"
-                                           Foreground="#E2E8F0" Margin="0,0,0,14"/>
+                                           Foreground="#F1F5F9" Margin="0,0,0,14"/>
                                 <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -720,11 +604,7 @@
                                     <StackPanel Grid.Column="1">
                                         <TextBlock Text="Description (optional)" FontSize="11" Foreground="#94A3B8" Margin="0,0,0,4"/>
                                         <TextBox x:Name="TxtNoteDesc" Style="{StaticResource InputStyle}"
-                                                 Height="72" TextWrapping="Wrap"
-                                                 AcceptsReturn="True"
-                                                 VerticalScrollBarVisibility="Auto"
-                                                 VerticalContentAlignment="Top"
-                                                 Padding="10,8"/>
+                                                 Height="36" VerticalContentAlignment="Center"/>
                                     </StackPanel>
                                 </Grid>
 
@@ -752,7 +632,7 @@
                             <StackPanel>
                                 <Grid Margin="0,0,0,12">
                                     <TextBlock Text="Saved Notes" FontSize="14" FontWeight="SemiBold"
-                                               Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                               Foreground="#F1F5F9" VerticalAlignment="Center"/>
                                     <TextBlock x:Name="TxtNoteCountBadge" FontSize="12"
                                                Foreground="#64748B" HorizontalAlignment="Right"
                                                VerticalAlignment="Center"/>
@@ -760,32 +640,39 @@
                                 <ItemsControl x:Name="IcNotes">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Background="#222840" CornerRadius="8"
-                                                    Margin="0,4" BorderBrush="#252D45" BorderThickness="1">
+                                            <!-- NEXUS-style note row -->
+                                            <Border Background="#273348" CornerRadius="8"
+                                                    Margin="0,3" BorderBrush="#334155" BorderThickness="1"
+                                                    Padding="14,11">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="5"/>
+                                                        <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <!-- Color strip -->
-                                                    <Border Grid.Column="0" Background="{Binding ColorBrush}"
-                                                            CornerRadius="8,0,0,8"/>
+                                                    <!-- Colored icon box -->
+                                                    <Border Grid.Column="0" Width="36" Height="36"
+                                                            Background="{Binding ColorBrush}"
+                                                            CornerRadius="8" Margin="0,0,12,0"
+                                                            Opacity="0.85">
+                                                        <TextBlock Text="📝" FontSize="16"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Border>
                                                     <!-- Text + module badges -->
-                                                    <StackPanel Grid.Column="1" Margin="14,10">
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Note.name}"
                                                                    FontWeight="SemiBold" FontSize="13"
-                                                                   Foreground="#E2E8F0"/>
+                                                                   Foreground="#F1F5F9"/>
                                                         <TextBlock Text="{Binding Description}"
-                                                                   FontSize="12" Foreground="#94A3B8"
+                                                                   FontSize="11" Foreground="#94A3B8"
                                                                    TextTrimming="CharacterEllipsis"
                                                                    Margin="0,2,0,0"
                                                                    Visibility="{Binding DescriptionVisibility}"/>
-                                                        <!-- Cross-module assignment badges (§2.1.4.1) -->
                                                         <TextBlock Text="{Binding ModuleAssignments}"
-                                                                   FontSize="10" Foreground="#818CF8"
-                                                                   Margin="0,4,0,0"
+                                                                   FontSize="10" Foreground="#6366F1"
+                                                                   Margin="0,3,0,0"
                                                                    Visibility="{Binding ModuleBadgeVisibility}"/>
                                                     </StackPanel>
                                                     <!-- Edit -->
@@ -829,7 +716,7 @@
                                 <ComboBox x:Name="CboLists" Grid.Column="0"
                                           FontSize="14" FontWeight="SemiBold"
                                           Padding="10,8" Margin="0,0,10,0"
-                                          BorderBrush="#2A3050"
+                                          BorderBrush="#334155"
                                           DisplayMemberPath="Name"
                                           SelectionChanged="CboLists_SelectionChanged"/>
                                 <Button Grid.Column="1" Content="＋ New List"
@@ -868,7 +755,7 @@
                         <Border Style="{StaticResource ModuleCardStyle}">
                             <StackPanel>
                                 <TextBlock Text="Add Task" FontSize="14" FontWeight="SemiBold"
-                                           Foreground="#E2E8F0" Margin="0,0,0,14"/>
+                                           Foreground="#F1F5F9" Margin="0,0,0,14"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -877,12 +764,8 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBox x:Name="TxtNewTask" Grid.Column="0"
                                              Style="{StaticResource InputStyle}"
-                                             Margin="0,0,8,0" Height="62"
-                                             TextWrapping="Wrap"
-                                             AcceptsReturn="True"
-                                             VerticalScrollBarVisibility="Auto"
-                                             VerticalContentAlignment="Top"
-                                             Padding="10,8"/>
+                                             Margin="0,0,8,0" Height="36"
+                                             VerticalContentAlignment="Center"/>
                                     <!-- Priority label + dropdown stacked -->
                                     <StackPanel Grid.Column="1" Margin="0,0,8,0">
                                         <TextBlock Text="Priority" FontSize="10" FontWeight="Bold"
@@ -906,7 +789,7 @@
                                            Visibility="Collapsed"/>
 
                                 <!-- Add existing note to this list (§2.2.3.2) -->
-                                <Border BorderBrush="#252D45" BorderThickness="0,1,0,0"
+                                <Border BorderBrush="#334155" BorderThickness="0,1,0,0"
                                         Margin="0,12,0,0" Padding="0,12,0,0">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -921,7 +804,7 @@
                                         <ComboBox x:Name="CboExistingNote" Grid.Column="1"
                                                   DisplayMemberPath="Note.name"
                                                   FontSize="13" Padding="8,6" Height="34"
-                                                  BorderBrush="#2A3050"
+                                                  BorderBrush="#334155"
                                                   Margin="0,0,8,0"
                                                   DropDownOpened="CboExistingNote_DropDownOpened"/>
                                         <Button Grid.Column="2" Content="＋ Add to List"
@@ -937,12 +820,12 @@
                             <StackPanel>
                                 <Grid Margin="0,0,0,12">
                                     <TextBlock Text="Tasks" FontSize="14" FontWeight="SemiBold"
-                                               Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                               Foreground="#F1F5F9" VerticalAlignment="Center"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                         <TextBlock Text="Sort:" FontSize="12" Foreground="#94A3B8"
                                                    VerticalAlignment="Center" Margin="0,0,8,0"/>
                                         <ComboBox x:Name="CboSort" FontSize="12" Padding="8,5"
-                                                  BorderBrush="#2A3050" Width="170"
+                                                  BorderBrush="#334155" Width="170"
                                                   SelectionChanged="CboSort_SelectionChanged"
                                                   SelectedIndex="0">
                                             <ComboBoxItem Content="Default Order"/>
@@ -961,9 +844,9 @@
                                           ItemContainerStyle="{StaticResource CleanListItemStyle}">
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Background="#222840" CornerRadius="8"
-                                                    Margin="0,3" BorderBrush="#252D45"
-                                                    BorderThickness="1" Padding="14,10">
+                                            <Border Background="#1E293B" CornerRadius="8"
+                                                    Margin="0,2" BorderBrush="#334155"
+                                                    BorderThickness="1" Padding="14,11">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="Auto"/>
@@ -977,17 +860,20 @@
                                                               VerticalAlignment="Center"
                                                               Margin="0,0,12,0"
                                                               Click="ChkTask_Click"/>
-                                                    <!-- Priority: !!! High  !! Medium  ! Low -->
-                                                    <TextBlock Grid.Column="1"
-                                                               Text="{Binding PriorityMarker}"
-                                                               Foreground="{Binding PriorityColor}"
-                                                               FontSize="12" FontWeight="Bold"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,0,10,0"
-                                                               ToolTip="{Binding PriorityMarker}"/>
+                                                    <!-- Priority pill (NEXUS-style) -->
+                                                    <Border Grid.Column="1"
+                                                            Background="{Binding PriorityBackground}"
+                                                            CornerRadius="4" Padding="7,2"
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,12,0"
+                                                            Visibility="{Binding PriorityVisible}">
+                                                        <TextBlock Text="{Binding PriorityMarker}"
+                                                                   Foreground="{Binding PriorityColor}"
+                                                                   FontSize="11" FontWeight="SemiBold"/>
+                                                    </Border>
                                                     <TextBlock Grid.Column="2" Text="{Binding TaskName}"
                                                                FontSize="13" VerticalAlignment="Center"
-                                                               Foreground="#E2E8F0">
+                                                               Foreground="#F1F5F9">
                                                         <TextBlock.Style>
                                                             <Style TargetType="TextBlock">
                                                                 <Style.Triggers>
@@ -1046,7 +932,7 @@
                                 <DockPanel>
                                     <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
                                         <TextBlock Text="Documents" FontSize="14" FontWeight="SemiBold"
-                                                   Foreground="#E2E8F0" Margin="0,0,0,10"/>
+                                                   Foreground="#F1F5F9" Margin="0,0,0,10"/>
 
                                         <!-- Inline new-doc name entry (hidden by default) -->
                                         <Border x:Name="PanelNewLtDoc" Visibility="Collapsed" Margin="0,0,0,8">
@@ -1123,7 +1009,7 @@
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Grid.Column="0"
                                                                Text="{Binding Title}"
-                                                               FontSize="12" Foreground="#E2E8F0"
+                                                               FontSize="12" Foreground="#F1F5F9"
                                                                VerticalAlignment="Center"
                                                                TextTrimming="CharacterEllipsis"/>
                                                     <Button Grid.Column="1" Content="🗑"
@@ -1159,7 +1045,7 @@
                                             </Grid.ColumnDefinitions>
                                             <TextBox x:Name="TxtLtTitle"
                                                      FontSize="15" FontWeight="SemiBold"
-                                                     BorderBrush="#2A3050" BorderThickness="1"
+                                                     BorderBrush="#334155" BorderThickness="1"
                                                      Padding="8,6" Height="36"
                                                      VerticalContentAlignment="Center"
                                                      Margin="0,0,8,0"
@@ -1171,122 +1057,57 @@
                                         </Grid>
 
                                         <!-- Formatting + annotation toolbar -->
-                                        <Border DockPanel.Dock="Top" Background="#141929"
-                                                CornerRadius="8" Margin="0,0,0,10"
-                                                BorderBrush="#252D45" BorderThickness="1">
-                                            <StackPanel>
-
-                                                <!-- Row 1: Text formatting -->
-                                                <Border BorderBrush="#252D45" BorderThickness="0,0,0,1"
-                                                        Padding="12,8">
+                                        <Border DockPanel.Dock="Top" Background="#273348"
+                                                CornerRadius="6" Padding="10,8" Margin="0,0,0,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <!-- Bold -->
+                                                <Button x:Name="BtnLtBold"
+                                                        Style="{StaticResource GhostButtonStyle}"
+                                                        Height="30" Padding="12,5"
+                                                        Margin="0,0,6,0"
+                                                        ToolTip="Make selected text Bold (Ctrl+B)"
+                                                        Click="BtnLtBold_Click">
                                                     <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="FORMAT"
-                                                                   FontSize="9" FontWeight="Bold"
-                                                                   Foreground="#4B5580"
-                                                                   VerticalAlignment="Center"
-                                                                   Margin="0,0,14,0" Width="48"/>
-                                                        <!-- Bold -->
-                                                        <Border CornerRadius="5" Margin="0,0,6,0">
-                                                            <Button x:Name="BtnLtBold"
-                                                                    Style="{StaticResource GhostButtonStyle}"
-                                                                    Click="BtnLtBold_Click"
-                                                                    Padding="10,4" Height="30"
-                                                                    ToolTip="Apply Bold to selected text (Ctrl+B)">
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="B" FontWeight="Bold"
-                                                                               FontSize="13" VerticalAlignment="Center"/>
-                                                                    <TextBlock Text=" Bold" FontSize="11"
-                                                                               Foreground="#94A3B8"
-                                                                               VerticalAlignment="Center"/>
-                                                                </StackPanel>
-                                                            </Button>
-                                                        </Border>
-                                                        <!-- Italic -->
-                                                        <Button x:Name="BtnLtItalic"
-                                                                Style="{StaticResource GhostButtonStyle}"
-                                                                Click="BtnLtItalic_Click"
-                                                                Padding="10,4" Height="30"
-                                                                ToolTip="Apply Italic to selected text (Ctrl+I)">
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="I" FontStyle="Italic"
-                                                                           FontSize="13" VerticalAlignment="Center"/>
-                                                                <TextBlock Text=" Italic" FontSize="11"
-                                                                           Foreground="#94A3B8"
-                                                                           VerticalAlignment="Center"/>
-                                                            </StackPanel>
-                                                        </Button>
-                                                        <TextBlock Text="Select text first, then click a format button."
-                                                                   FontSize="10" Foreground="#4B5580"
-                                                                   VerticalAlignment="Center" Margin="16,0,0,0"
-                                                                   FontStyle="Italic"/>
+                                                        <TextBlock Text="B" FontWeight="Bold"
+                                                                   FontSize="13" VerticalAlignment="Center"/>
+                                                        <TextBlock Text=" Bold" FontSize="11"
+                                                                   Foreground="#94A3B8" VerticalAlignment="Center"/>
                                                     </StackPanel>
-                                                </Border>
-
-                                                <!-- Row 2: Assign note to selection -->
-                                                <Border BorderBrush="#252D45" BorderThickness="0,0,0,1"
-                                                        Padding="12,8">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="62"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Grid.Column="0" Text="LINK NOTE"
-                                                                   FontSize="9" FontWeight="Bold"
-                                                                   Foreground="#4B5580"
-                                                                   VerticalAlignment="Center"/>
-                                                        <ComboBox x:Name="CboLtNote" Grid.Column="1"
-                                                                  DisplayMemberPath="Note.name"
-                                                                  FontSize="12" Padding="8,5"
-                                                                  Height="30" Margin="0,0,8,0"
-                                                                  Background="#0F1117"
-                                                                  BorderBrush="#2A3050"
-                                                                  ToolTip="Choose a note to link to your text selection"/>
-                                                        <Button Grid.Column="2"
-                                                                Content="🔗  Assign to Selection"
-                                                                Style="{StaticResource PrimaryButtonStyle}"
-                                                                Height="30" Padding="10,4" FontSize="12"
-                                                                ToolTip="Highlights the selected text and links it to the chosen note"
-                                                                Click="BtnLtAssignNote_Click"/>
-                                                    </Grid>
-                                                </Border>
-
-                                                <!-- Row 3: Auto-pattern highlight -->
-                                                <Border Padding="12,8">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="62"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Grid.Column="0" Text="PATTERN"
-                                                                   FontSize="9" FontWeight="Bold"
-                                                                   Foreground="#4B5580"
-                                                                   VerticalAlignment="Center"/>
-                                                        <TextBox x:Name="TxtLtRegex" Grid.Column="1"
-                                                                 FontSize="12" Padding="8,5"
-                                                                 BorderBrush="#2A3050" BorderThickness="1"
-                                                                 Height="30" Margin="0,0,8,0"
-                                                                 VerticalContentAlignment="Center"
-                                                                 Background="#0F1117" Foreground="#E2E8F0"
-                                                                 ToolTip="Type a word or regex — all matches in the document will be highlighted and linked to the chosen note"/>
-                                                        <Button Grid.Column="2"
-                                                                Content="⚡ Auto-Highlight"
-                                                                Style="{StaticResource GhostButtonStyle}"
-                                                                Height="30" Padding="10,4" FontSize="12"
-                                                                Margin="0,0,8,0"
-                                                                ToolTip="Find every match of the pattern and assign the chosen note to each"
-                                                                Click="BtnLtApplyRegex_Click"/>
-                                                        <Button x:Name="BtnLtToggleHighlights"
-                                                                Content="👁  Hide Highlights"
-                                                                Style="{StaticResource GhostButtonStyle}"
-                                                                Height="30" Padding="10,4" FontSize="12"
-                                                                Click="BtnLtToggleHighlights_Click"
-                                                                ToolTip="Temporarily show or hide all note highlight colours"/>
-                                                    </Grid>
-                                                </Border>
-
+                                                </Button>
+                                                <!-- Italic -->
+                                                <Button x:Name="BtnLtItalic"
+                                                        Style="{StaticResource GhostButtonStyle}"
+                                                        Height="30" Padding="12,5"
+                                                        Margin="0,0,16,0"
+                                                        ToolTip="Make selected text Italic (Ctrl+I)"
+                                                        Click="BtnLtItalic_Click">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="I" FontStyle="Italic"
+                                                                   FontSize="13" VerticalAlignment="Center"/>
+                                                        <TextBlock Text=" Italic" FontSize="11"
+                                                                   Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <!-- Divider -->
+                                                <Border Width="1" Height="20" Background="#334155"
+                                                        VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                                <!-- Note picker + assign -->
+                                                <ComboBox x:Name="CboLtNote"
+                                                          DisplayMemberPath="Note.name"
+                                                          FontSize="12" Padding="8,5"
+                                                          Width="160" Height="30"
+                                                          Margin="0,0,8,0"
+                                                          ToolTip="Choose a note to link to selected text"/>
+                                                <Button Content="🔗  Assign Note to Selection"
+                                                        Style="{StaticResource PrimaryButtonStyle}"
+                                                        Height="30" Padding="12,5" FontSize="12"
+                                                        ToolTip="Highlights the selected text and links it to the chosen note"
+                                                        Click="BtnLtAssignNote_Click"/>
+                                                <!-- Hidden controls kept for code-behind compatibility -->
+                                                <TextBox x:Name="TxtLtRegex" Visibility="Collapsed"/>
+                                                <Button x:Name="BtnLtToggleHighlights"
+                                                        Visibility="Collapsed"
+                                                        Click="BtnLtToggleHighlights_Click"/>
                                             </StackPanel>
                                         </Border>
 
@@ -1300,8 +1121,8 @@
                                         <!-- Rich text editor -->
                                         <RichTextBox x:Name="RtbEditor"
                                                      FontSize="13" Padding="10"
-                                                     BorderBrush="#2A3050" BorderThickness="1"
-                                                     VerticalScrollBarVisibility="Auto"
+                                                     BorderBrush="#334155" BorderThickness="1"
+                                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
                                                      MinHeight="320"
                                                      AcceptsReturn="True"
                                                      TextChanged="RtbEditor_TextChanged"/>
@@ -1325,7 +1146,7 @@
                 <TextBlock x:Name="TxtStatus" Foreground="White"
                            FontSize="13" FontWeight="SemiBold"
                            VerticalAlignment="Center"/>
-                <Button Content="✕" Background="Transparent" Foreground="#E2E8F0"
+                <Button Content="✕" Background="Transparent" Foreground="#F1F5F9"
                         BorderThickness="0" FontSize="14" HorizontalAlignment="Right"
                         Cursor="Hand" Click="BtnDismissStatus_Click"/>
             </Grid>
