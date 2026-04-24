@@ -53,6 +53,10 @@ namespace OrganizationProject.Core.Entities
                 }
             }
         }
+        public void DeleteList()
+        {
+            while (notes.Count > 0) RemoveNote(0);
+        }
         //Takes a note from one position and puts it in another. For moving notes.
         public void moveTo(int fromIndex, int toIndex)
         {

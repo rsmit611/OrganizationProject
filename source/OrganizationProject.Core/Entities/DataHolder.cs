@@ -15,6 +15,9 @@ namespace OrganizationProject.Core.Entities
         public List<TextDocument> allTextModules => textModule.GetAllDocuments();
         public TextModule textModule;
 
+        public List<Calendar> allCalendars; 
+
+
         public static ListModule unassignedNotesList;
         public ListModule? UnassignedNotesList;
 
@@ -27,6 +30,7 @@ namespace OrganizationProject.Core.Entities
             timeSinceLastBackup = 0f;
             allLists = new List<ListModule>();
             allNotes = new List<Note>();
+            allCalendars = new List<Calendar>();
             unassignedNotesList = new ListModule();
             textModule = new TextModule();
         }
@@ -38,6 +42,7 @@ namespace OrganizationProject.Core.Entities
             timeSinceLastBackup = other.timeSinceLastBackup;
             allLists = (List<ListModule>)other.AllLists;
             allNotes = (List<Note>)other.AllNotes;
+            allCalendars = (List<Calendar>)other.AllCalendars;
             textModule.SetAllDocuments((List<TextDocument>)other.AllTextModules);
             backupCycle = other.backupCycle;
             UnassignedNotesList = other.UnassignedNotesList;
@@ -46,6 +51,8 @@ namespace OrganizationProject.Core.Entities
         public IReadOnlyList<ListModule> AllLists => allLists.AsReadOnly();
         public IReadOnlyList<Note> AllNotes => allNotes.AsReadOnly();
         public IReadOnlyList<TextDocument> AllTextModules => allTextModules.AsReadOnly();
+        public IReadOnlyList<Calendar> AllCalendars => allCalendars.AsReadOnly();
+
 
         public void save()
         {
@@ -128,5 +135,23 @@ namespace OrganizationProject.Core.Entities
             foreach (var note in allNotes)
                 note.remove(doc);
         }
+
+        public void addCalendar(Calendar calendar)
+        {
+            if (calendar == null) throw new ArgumentNullException(nameof (calendar));
+            if (allCalendars.Count >= 100)
+                throw new InvalidOperationException("Cannot create more than 100 calendars.");
+            if (allCalendars.Contains(calendar)) return;
+            allCalendars.Add(calendar);
+        }
+        public void removeCalendar(Calendar calendar)
+        {
+            if (calendar == null) throw new ArgumentNullException(nameof (calendar));   
+            if (!allCalendars.Remove(calendar)) return;
+
+            foreach(var calNote in calendar.Notes.ToList())
+                calNote.Note.remove(calendar);
+        }
+
     }
 }
