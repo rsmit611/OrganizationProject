@@ -11,7 +11,7 @@
     <Window.Resources>
         <local:PriorityToColorConverter x:Key="PriorityToColorConverter"/>
 
-        <!-- ── NEXUS-inspired Dark Palette ── -->
+        <!-- ──  Dark Palette ── -->
         <SolidColorBrush x:Key="PrimaryBrush"       Color="#6366F1"/>
         <SolidColorBrush x:Key="PrimaryHoverBrush"  Color="#4F46E5"/>
         <SolidColorBrush x:Key="SidebarBgBrush"     Color="#0F172A"/>
@@ -141,7 +141,7 @@
             </Setter>
         </Style>
 
-        <!-- ── NEXUS-style Card ── -->
+        <!-- ──  Card Style  ── -->
         <Style x:Key="ModuleCardStyle" TargetType="Border">
             <Setter Property="Background"      Value="{StaticResource CardBrush}"/>
             <Setter Property="CornerRadius"    Value="10"/>
@@ -233,14 +233,13 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ══════════════════════════════════════════ -->
-        <!-- SIDEBAR  (NEXUS-style)                     -->
-        <!-- ══════════════════════════════════════════ -->
+
+        <!-- SIDEBAR                      -->
         <Border Grid.Column="0" Grid.RowSpan="2" Background="{StaticResource SidebarBgBrush}"
                 BorderBrush="#1E293B" BorderThickness="0,0,1,0">
             <DockPanel>
 
-                <!-- Logo – horizontal, like NEXUS ─────────────────── -->
+                <!-- Logo – horizontal ─────────────────── -->
                 <Border DockPanel.Dock="Top" Padding="18,20,18,18"
                         BorderBrush="#1E293B" BorderThickness="0,0,0,1">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -283,16 +282,14 @@
             </DockPanel>
         </Border>
 
-        <!-- ══════════════════════════════════════════ -->
         <!-- MAIN CONTENT AREA                         -->
-        <!-- ══════════════════════════════════════════ -->
         <Grid Grid.Column="1" Grid.Row="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Top header bar – NEXUS style ──────────── -->
+            <!-- Top header bar – ──────────── -->
             <Border Grid.Row="0" Background="#1E293B"
                     BorderBrush="#334155" BorderThickness="0,0,0,1"
                     Padding="24,0">
@@ -308,9 +305,8 @@
                           ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <Grid>
 
-                    <!-- ════════════════════════════════ -->
+
                     <!-- DASHBOARD                        -->
-                    <!-- ════════════════════════════════ -->
                     <StackPanel x:Name="PanelDashboard" Visibility="Visible">
                         <TextBlock Text="Good to see you. Here's your overview."
                                    FontSize="13" Foreground="#64748B" Margin="0,0,0,16"/>
@@ -392,9 +388,8 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- ════════════════════════════════ -->
+
                     <!-- CALENDAR                         -->
-                    <!-- ════════════════════════════════ -->
                     <StackPanel x:Name="PanelCalendar" Visibility="Collapsed">
 
                         <!-- Month navigation -->
@@ -579,9 +574,8 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- ════════════════════════════════ -->
+
                     <!-- NOTES                            -->
-                    <!-- ════════════════════════════════ -->
                     <StackPanel x:Name="PanelNotes" Visibility="Collapsed">
 
                         <!-- Create note -->
@@ -640,7 +634,7 @@
                                 <ItemsControl x:Name="IcNotes">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <!-- NEXUS-style note row -->
+                                            <!-- note row -->
                                             <Border Background="#273348" CornerRadius="8"
                                                     Margin="0,3" BorderBrush="#334155" BorderThickness="1"
                                                     Padding="14,11">
@@ -700,9 +694,8 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- ════════════════════════════════ -->
+
                     <!-- LISTS                            -->
-                    <!-- ════════════════════════════════ -->
                     <StackPanel x:Name="PanelList" Visibility="Collapsed">
 
                         <!-- List selector bar -->
@@ -917,9 +910,7 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- ════════════════════════════════ -->
                     <!-- LONG TEXT                        -->
-                    <!-- ════════════════════════════════ -->
                     <StackPanel x:Name="PanelLongText" Visibility="Collapsed">
                         <Grid MinHeight="540">
                             <Grid.ColumnDefinitions>
@@ -1136,9 +1127,8 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- ══════════════════════════════════════════ -->
+
         <!-- STATUS BAR                                 -->
-        <!-- ══════════════════════════════════════════ -->
         <Border x:Name="StatusBar" Grid.Column="1" Grid.Row="1"
                 Background="{StaticResource SuccessBrush}"
                 Padding="20,10" Visibility="Collapsed" CornerRadius="0,0,0,0">

@@ -30,7 +30,7 @@ namespace OrganizationProject
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // CalendarEntry  –  one scheduled event (linked to a Note per §2.2.2.2)
+    // CalendarEntry  –  one scheduled event 
     // ─────────────────────────────────────────────────────────────────────────
     public class CalendarEntry
     {
@@ -75,7 +75,7 @@ namespace OrganizationProject
             }
         }
 
-        // ── Cross-module assignment badges (§2.1.4.1 / §2.1.4.3) ────────────
+        // ── Cross-module assignment badges  ────────────
         // Populated by MainWindow.RefreshNoteBadges() after any module change.
         public string ModuleAssignments { get; set; } = "";
 
@@ -83,11 +83,8 @@ namespace OrganizationProject
             string.IsNullOrWhiteSpace(ModuleAssignments) ? Visibility.Collapsed : Visibility.Visible;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+
     // ListNoteViewModel  –  wraps ListNote with proper bindable properties
-    //  (WPF binding only works on public *properties*, not fields, so we can't
-    //   bind directly to ListNote.note or ListNote.priority which are fields)
-    // ─────────────────────────────────────────────────────────────────────────
     public class ListNoteViewModel : System.ComponentModel.INotifyPropertyChanged
     {
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
@@ -105,7 +102,7 @@ namespace OrganizationProject
             set { Source.IsComplete = value; Notify(nameof(IsComplete)); }
         }
 
-        // Priority shown as text pill labels (inspired by NEXUS design)
+        // Priority shown as text pill labels
         public string PriorityMarker => Source.priority switch
         {
             ListPriority.High   => "High",
@@ -146,9 +143,8 @@ namespace OrganizationProject
         public ListModuleWrapper(ListModule module, string name) { Module = module; Name = name; }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+
     // MainWindow
-    // ─────────────────────────────────────────────────────────────────────────
     public partial class MainWindow : Window
     {
         private readonly ObservableCollection<ListNoteViewModel>       _taskItems    = new();
@@ -157,11 +153,11 @@ namespace OrganizationProject
         private readonly ObservableCollection<ListModuleWrapper> _listWrappers = new();
         private readonly ObservableCollection<TextDocument>      _ltDocuments  = new();
 
-        // ── List module state ────────────────────────────────────────────────
+        // ── List module state 
         // Maps each ListModule to its user-supplied display name
         private readonly Dictionary<ListModule, string> _listNames = new();
 
-        // ── Long Text state ──────────────────────────────────────
+        // ── Long Text state 
         private readonly TextModule _textModule       = new();
         private TextDocument?       _activeLtDoc      = null;
         private bool                _highlightsVisible = true;
@@ -291,10 +287,8 @@ namespace OrganizationProject
             return $"{complete} / {total} complete";
         }
 
-        // ═══════════════════════════════════════
+        
         // NAVIGATION
-        // ═══════════════════════════════════════
-
         private void HideAllPanels()
         {
             if (PanelDashboard == null) return;
@@ -349,11 +343,9 @@ namespace OrganizationProject
             CboLtNote.SelectedIndex = _displayNotes.Count > 0 ? 0 : -1;
         }
 
-        // ═══════════════════════════════════════════
-        // LONG TEXT — document management  (§2.2.4)
-        // ═══════════════════════════════════════════
-
-        /// Show the inline name-entry row (§2.2.4.1 — prompt for name on creation)
+    
+        // LONG TEXT — document management
+        /// Show the inline name-entry row 
         private void BtnNewLongText_Click(object sender, RoutedEventArgs e)
         {
             PanelNewLtDoc.Visibility    = Visibility.Visible;
@@ -398,7 +390,7 @@ namespace OrganizationProject
             ShowStatus("Document created!", true);
         }
 
-        /// Delete document and remove all note references  (§2.2.4.4)
+        /// Delete document and remove all note references 
         private void BtnDeleteLtDoc_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?.Tag is not TextDocument doc) return;
@@ -498,7 +490,7 @@ namespace OrganizationProject
             return text.TrimEnd('\r', '\n');
         }
 
-        // ── Formatting helpers (§2.2.4.2) ──────────────────────────────────
+        // ── Formatting helpers
 
         private void BtnLtBold_Click(object sender, RoutedEventArgs e)
         {
@@ -558,7 +550,7 @@ namespace OrganizationProject
             ShowStatus("Document renamed.", true);
         }
 
-        // ── Note assignment ──────────────────────────────────────
+        // ── Note assignment 
 
         /// Assign the selected note to the currently highlighted text selection
         private void BtnLtAssignNote_Click(object sender, RoutedEventArgs e)
@@ -589,7 +581,7 @@ namespace OrganizationProject
             ShowStatus("Note assigned to selection!", true);
         }
 
-        /// Apply a regex/string pattern to auto-assign a note to all matches (§2.2.4.3)
+        /// Apply a regex/string pattern to auto-assign a note to all matches
         private void BtnLtApplyRegex_Click(object sender, RoutedEventArgs e)
         {
             if (_activeLtDoc == null) { ShowLtValidation("Open a document first."); return; }
@@ -617,7 +609,7 @@ namespace OrganizationProject
             }
         }
 
-        /// Toggle visibility of note highlights without removing assignments (§2.2.4.3)
+        /// Toggle visibility of note highlights without removing assignments
         private void BtnLtToggleHighlights_Click(object sender, RoutedEventArgs e)
         {
             _highlightsVisible = !_highlightsVisible;
@@ -627,7 +619,7 @@ namespace OrganizationProject
                 RenderHighlights(_activeLtDoc);
         }
 
-        // ── Rendering helpers ────────────────────────────────────────────────
+        // ── Rendering helpers 
 
         private void RenderHighlights(TextDocument doc)
         {
@@ -747,10 +739,8 @@ namespace OrganizationProject
             RefreshTaskList();
         }
 
-        // ═══════════════════════════════════════
+        
         // CALENDAR
-        // ═══════════════════════════════════════
-
         private void BtnPrevMonth_Click(object sender, RoutedEventArgs e)
         {
             _displayMonth = _displayMonth.AddMonths(-1);
@@ -952,7 +942,7 @@ namespace OrganizationProject
             RefreshDayEvents();
             RefreshAllEvents();
             BuildCalendarGrid();
-            RefreshNoteList();   // re-stamp module badges on note cards (§2.1.4.1)
+            RefreshNoteList();   // re-stamp module badges on note cards
             ShowStatus("Event added!", true);
             UpdateDashboardCounts();
         }
@@ -985,10 +975,8 @@ namespace OrganizationProject
             RefreshTaskList();
         }
 
-        // ═══════════════════════════════════════
-        // NOTES
-        // ═══════════════════════════════════════
 
+        // NOTES
         private string GetSelectedNoteColor()
         {
             if (RbColorRed.IsChecked    == true) return "#E74C3C";
@@ -1070,17 +1058,17 @@ namespace OrganizationProject
             {
                 if (_editingNote == model) _editingNote = null;
 
-                // ── Remove from Calendar (§2.2.1.3) ──
+                // ── Remove from Calendar
                 var orphaned = _allEvents.Where(ev => ev.Note == model.Note).ToList();
                 foreach (var ev in orphaned) _allEvents.Remove(ev);
 
-                // ── Remove from every List (§2.1.4.3) ──
+                // ── Remove from every List
                 if (App.Data.allLists != null)
                     foreach (var list in App.Data.allLists)
                         if (list.Notes.Any(ln => ln.note == model.Note))
                             list.RemoveNote(model.Note);
 
-                // ── Remove from Long Text documents (§2.1.4.3) ──
+                // ── Remove from Long Text documents
                 foreach (var doc in _textModule.Documents)
                     if (doc.Notes.Any(a => a.AssignedNote == model.Note))
                         doc.RemoveNote(model.Note);
@@ -1110,7 +1098,7 @@ namespace OrganizationProject
             TxtNoteCountBadge.Text = $"{_displayNotes.Count} note{(_displayNotes.Count == 1 ? "" : "s")}";
         }
 
-        /// Build the module-badge string for every note (§2.1.4.1 / §2.1.4.3)
+        /// Build the module-badge string for every note
         private void RefreshNoteBadges()
         {
             foreach (var ndm in _displayNotes)
@@ -1134,10 +1122,8 @@ namespace OrganizationProject
             }
         }
 
-        // ═══════════════════════════════════════
-        // LISTS
-        // ═══════════════════════════════════════
 
+        // LISTS
         private void RefreshListSelector()
         {
             _listWrappers.Clear();
@@ -1209,7 +1195,7 @@ namespace OrganizationProject
 
             var target = _listWrappers[_activeListIdx].Module;
 
-            // §2.2.3.4 — remove note references to this list, then delete
+            // remove note references to this list, then delete
             foreach (var ln in target.Notes.ToList())
                 target.RemoveNote(ln.note);
 
@@ -1292,7 +1278,7 @@ namespace OrganizationProject
             UpdateDashboardCounts();
         }
 
-        // ── Add existing note to current list (§2.2.3.2) ────────────────────
+        // Add existing note to current list 
 
         /// Populate the existing-note picker with notes not already in this list
         private void CboExistingNote_DropDownOpened(object sender, EventArgs e)
@@ -1326,8 +1312,8 @@ namespace OrganizationProject
             UpdateDashboardCounts();
         }
 
-        // ── Reorder ──────────────────────────────────────────────
 
+        // Reorder 
         private void BtnMoveTaskUp_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?.Tag is not ListNoteViewModel vm) return;
