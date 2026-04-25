@@ -256,17 +256,20 @@ public class TextDocument
             }
             else
             {
-                if (index <= start)
+                // FIX: Changed from "index <= start" to "index < start"
+                // This prevents notes from extending when you type right after them
+                if (index < start)
                 {
-                    //Shift forward
+                    //Insertion before the note - shift forward
                     Notes[i] = new NoteAssignment(start + changeLength, c.Length, c.AssignedNote);
                 }
                 else if (index < end)
                 {
-                    //Insert inside, so expand
+                    //Insert inside the note - expand it
                     Notes[i] = new NoteAssignment(start, c.Length + changeLength, c.AssignedNote);
                 }
-                //Otherwise we do nothing
+                //If index == start (insertion at the beginning) or index >= end (after the note), 
+                //the note doesn't change. This prevents unwanted extension when typing after a note.
             }
         }
     }

@@ -12,9 +12,7 @@ using OrganizationProject.Core.Entities;
 
 namespace OrganizationProject
 {
-    // ─────────────────────────────────────────────────────────────────────────
     // Priority → colour converter
-    // ─────────────────────────────────────────────────────────────────────────
     public class PriorityToColorConverter : System.Windows.Data.IValueConverter
     {
         public object Convert(object value, Type t, object p, System.Globalization.CultureInfo c) =>
@@ -29,9 +27,8 @@ namespace OrganizationProject
             => throw new NotImplementedException();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    
     // CalendarEntry  –  one scheduled event 
-    // ─────────────────────────────────────────────────────────────────────────
     public class CalendarEntry
     {
         public Note?     Note         { get; set; }
@@ -54,9 +51,8 @@ namespace OrganizationProject
             d.Date >= Date.Date && d.Date <= EndDate.Date;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    
     // NoteDisplayModel  –  wraps Note with colour + description for the UI
-    // ─────────────────────────────────────────────────────────────────────────
     public class NoteDisplayModel
     {
         public Note   Note        { get; set; } = null!;
@@ -75,7 +71,7 @@ namespace OrganizationProject
             }
         }
 
-        // ── Cross-module assignment badges  ────────────
+        // ── Cross-module assignment badges  
         // Populated by MainWindow.RefreshNoteBadges() after any module change.
         public string ModuleAssignments { get; set; } = "";
 
@@ -88,7 +84,7 @@ namespace OrganizationProject
     public class ListNoteViewModel : System.ComponentModel.INotifyPropertyChanged
     {
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
-        private void Notify(string n) =>
+        public void Notify(string n) =>
             PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(n));
 
         public ListNote Source { get; }
@@ -143,6 +139,16 @@ namespace OrganizationProject
         public ListModuleWrapper(ListModule module, string name) { Module = module; Name = name; }
     }
 
+     
+    // NoteModuleDetail  –  tracks specific module instances where a note is used
+    public class NoteModuleDetail
+    {
+        public string ModuleIcon { get; set; } = "";      // Emoji icon for module type
+        public string ModuleName { get; set; } = "";      // "Calendar", "List", "Long Text"
+        public object ModuleInstance { get; set; } = null!; // The actual module object
+        public string InstanceName { get; set; } = "";    // Specific name (list name, doc title, etc.)
+    }
+
 
     // MainWindow
     public partial class MainWindow : Window
@@ -152,13 +158,18 @@ namespace OrganizationProject
         private readonly ObservableCollection<CalendarEntry>     _allEvents    = new();
         private readonly ObservableCollection<ListModuleWrapper> _listWrappers = new();
         private readonly ObservableCollection<TextDocument>      _ltDocuments  = new();
+        private readonly ObservableCollection<NoteModuleDetail>  _moduleDetails = new();
 
-        // ── List module state 
+        //  List module state 
         // Maps each ListModule to its user-supplied display name
         private readonly Dictionary<ListModule, string> _listNames = new();
+        
+        //  Module navigation tracking
+        // Maps each Note to its detailed module assignments
+        private readonly Dictionary<Note, List<NoteModuleDetail>> _noteModuleDetails = new();
 
-        // ── Long Text state 
-        private readonly TextModule _textModule       = new();
+        //  Long Text state 
+        private TextModule TextModule => App.Data.textModule;  // FIX: Use shared instance from App.Data
         private TextDocument?       _activeLtDoc      = null;
         private bool                _highlightsVisible = true;
         private bool                _ltSuppressSync   = false;
@@ -183,6 +194,19 @@ namespace OrganizationProject
             try
             {
                 InitializeComponent();
+
+                // Load saved data on application startup
+                try
+                {
+                    App.Data.load();
+                    SyncLoadedDataToUI();
+                }
+                catch (Exception ex)
+                {
+                    // If load fails (first run or corrupted file), continue with empty data
+                    System.Diagnostics.Debug.WriteLine($"Load failed: {ex.Message}");
+                }
+
                 _isLoaded = true;
 
                 _statusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
@@ -196,6 +220,7 @@ namespace OrganizationProject
                 IcNotes.ItemsSource       = _displayNotes;
                 CboLists.ItemsSource      = _listWrappers;
                 LbLtDocuments.ItemsSource = _ltDocuments;
+                IcModuleDetails.ItemsSource = _moduleDetails;
 
                 RefreshListSelector();
                 BuildCalendarGrid();
@@ -216,6 +241,40 @@ namespace OrganizationProject
             int pending = App.Data.allLists == null ? 0 :
                 App.Data.allLists.SelectMany(l => l.Notes).Count(ln => !ln.IsComplete);
             TxtTaskCount.Text = pending.ToString();
+        }
+
+        /// Sync loaded data from DataHolder to UI observable collections
+        private void SyncLoadedDataToUI()
+        {
+            // Sync notes to display models
+            foreach (var note in App.Data.AllNotes)
+            {
+                _displayNotes.Add(new NoteDisplayModel
+                {
+                    Note = note,
+                    Color = note.color,
+                    Description = note.description
+                });
+            }
+
+            // Sync text documents
+            foreach (var doc in App.Data.AllTextModules)
+            {
+                _ltDocuments.Add(doc);
+            }
+
+            // Sync list names
+            if (App.Data.allLists != null)
+            {
+                for (int i = 0; i < App.Data.allLists.Count; i++)
+                {
+                    var list = App.Data.allLists[i];
+                    if (!_listNames.ContainsKey(list))
+                    {
+                        _listNames[list] = $"List {i + 1}";
+                    }
+                }
+            }
         }
 
         private void ShowStatus(string message, bool success = true)
@@ -375,10 +434,10 @@ namespace OrganizationProject
             }
 
             var doc   = new TextDocument(name);
-            bool ok   = _textModule.AddDocument(doc);
+            bool ok   = TextModule.AddDocument(doc);
             if (!ok)
             {
-                ShowLtValidation(_textModule.Documents.Count >= 150
+                ShowLtValidation(TextModule.Documents.Count >= 150
                     ? "Maximum of 150 documents reached."
                     : "A document with that name already exists.");
                 return;
@@ -399,7 +458,7 @@ namespace OrganizationProject
             foreach (var assignment in doc.Notes.ToList())
                 assignment.AssignedNote.remove(doc);
 
-            _textModule.RemoveDocument(doc);
+            TextModule.RemoveDocument(doc);
             _ltDocuments.Remove(doc);
 
             if (_activeLtDoc == doc)
@@ -450,34 +509,102 @@ namespace OrganizationProject
             // Render note highlights
             RenderHighlights(doc);
 
+            // Reset incremental tracking for new document
+            _lastCommittedText = doc.Content;
+
             _ltSuppressSync = false;
         }
 
-        /// Sync current RichTextBox content back to the TextDocument
+        // Track changes for incremental updates - FIX #2
+        private string _lastCommittedText = "";
+
+        
+        /// Sync current RichTextBox content back to the TextDocument using incremental edits 
         private void CommitEditorToDocument()
         {
             if (_activeLtDoc == null) return;
 
-            string text = GetEditorPlainText();
-
-            // Save note assignments before EditContent wipes them
-            var savedNotes = _activeLtDoc.Notes
-                .Select(n => (n.StartIndex, n.Length, n.AssignedNote))
-                .ToList();
-
-            _activeLtDoc.EditContent(text);   // resets Content, clears Formatting + Notes
-
-            // Restore note assignments that still fit within new content length
-            foreach (var (start, length, note) in savedNotes)
+            string currentText = GetEditorPlainText();
+            
+            // 
+            if (string.IsNullOrEmpty(_lastCommittedText))
             {
-                if (start >= 0 && start + length <= text.Length)
-                {
-                    try { _activeLtDoc.AssignNote(start, length, note); } catch { /* skip stale */ }
-                }
+                _lastCommittedText = currentText;
+                _activeLtDoc.EditContent(currentText);
+                ExtractFormattingFromEditor(_activeLtDoc);
+                return;
             }
 
-            // Re-extract and store bold/italic formatting spans
-            ExtractFormattingFromEditor(_activeLtDoc);
+            // Find the change region
+            int prefixLen = GetCommonPrefixLength(_lastCommittedText, currentText);
+            int suffixLen = GetCommonSuffixLength(_lastCommittedText, currentText, prefixLen);
+
+            // Calculate what was deleted and what was inserted
+            int oldChangeEnd = _lastCommittedText.Length - suffixLen;
+            int newChangeEnd = currentText.Length - suffixLen;
+            
+            int deletedLen = oldChangeEnd - prefixLen;
+            int insertedLen = newChangeEnd - prefixLen;
+
+            try
+            {
+                // Apply deletions first (if any)
+                if (deletedLen > 0)
+                {
+                    _activeLtDoc.DeleteText(prefixLen, deletedLen);
+                }
+
+                // Then apply insertions (if any)
+                if (insertedLen > 0)
+                {
+                    string insertedText = currentText.Substring(prefixLen, insertedLen);
+                    _activeLtDoc.InsertText(prefixLen, insertedText);
+                }
+
+                // Update formatting
+                ExtractFormattingFromEditor(_activeLtDoc);
+                
+                _lastCommittedText = currentText;
+            }
+            catch (Exception ex)
+            {
+                // If incremental update fails, fall back to full replace
+                System.Diagnostics.Debug.WriteLine($"Incremental update failed: {ex.Message}");
+                var savedNotes = _activeLtDoc.Notes.Select(n => (n.StartIndex, n.Length, n.AssignedNote)).ToList();
+                _activeLtDoc.EditContent(currentText);
+                
+                foreach (var (start, length, note) in savedNotes)
+                {
+                    if (start >= 0 && start + length <= currentText.Length)
+                    {
+                        try { _activeLtDoc.AssignNote(start, length, note); } catch { }
+                    }
+                }
+                ExtractFormattingFromEditor(_activeLtDoc);
+                _lastCommittedText = currentText;
+            }
+        }
+
+        // Helper method: Find length of common prefix
+        private int GetCommonPrefixLength(string a, string b)
+        {
+            int len = Math.Min(a.Length, b.Length);
+            for (int i = 0; i < len; i++)
+            {
+                if (a[i] != b[i]) return i;
+            }
+            return len;
+        }
+
+        // Helper method: Find length of common suffix (excluding the prefix region)
+        private int GetCommonSuffixLength(string a, string b, int prefixLen)
+        {
+            int maxLen = Math.Min(a.Length - prefixLen, b.Length - prefixLen);
+            for (int i = 0; i < maxLen; i++)
+            {
+                if (a[a.Length - 1 - i] != b[b.Length - 1 - i]) return i;
+            }
+            return maxLen;
         }
 
         private string GetEditorPlainText()
@@ -490,8 +617,7 @@ namespace OrganizationProject
             return text.TrimEnd('\r', '\n');
         }
 
-        // ── Formatting helpers
-
+        // Formatting helpers
         private void BtnLtBold_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Documents.EditingCommands.ToggleBold.Execute(null, RtbEditor);
@@ -533,7 +659,7 @@ namespace OrganizationProject
             if (newTitle == _activeLtDoc.Title) return;
 
             // Check for duplicate name
-            if (_textModule.Documents.Any(d => d != _activeLtDoc && d.Title == newTitle))
+            if (TextModule.Documents.Any(d => d != _activeLtDoc && d.Title == newTitle))
             {
                 ShowLtValidation("A document with that name already exists.");
                 TxtLtTitle.Text = _activeLtDoc.Title;
@@ -550,8 +676,7 @@ namespace OrganizationProject
             ShowStatus("Document renamed.", true);
         }
 
-        // ── Note assignment 
-
+        //  Note assignment 
         /// Assign the selected note to the currently highlighted text selection
         private void BtnLtAssignNote_Click(object sender, RoutedEventArgs e)
         {
@@ -619,8 +744,7 @@ namespace OrganizationProject
                 RenderHighlights(_activeLtDoc);
         }
 
-        // ── Rendering helpers 
-
+        // Rendering helpers 
         private void RenderHighlights(TextDocument doc)
         {
             // Clear all existing background highlights
@@ -914,6 +1038,28 @@ namespace OrganizationProject
             string eventName = TxtEventName?.Text.Trim() ?? "";
             var    ndm       = CboEventNote?.SelectedItem as NoteDisplayModel;
 
+            // FIX #3: If user typed a name but didn't select an existing note, create a new note
+            if (!string.IsNullOrWhiteSpace(eventName) && ndm == null)
+            {
+                // Check if a note with this name already exists
+                ndm = _displayNotes.FirstOrDefault(n => n.Note.name == eventName);
+                
+                if (ndm == null)
+                {
+                    // Create a new note for this calendar event
+                    var newNote = new Note(eventName);
+                    App.Data.addNote(newNote);  // Add to global notes list
+                    
+                    ndm = new NoteDisplayModel
+                    {
+                        Note = newNote,
+                        Color = "#5B6AF0",
+                        Description = ""
+                    };
+                    _displayNotes.Add(ndm);
+                }
+            }
+
             // Need at least an event name OR a linked note
             if (string.IsNullOrWhiteSpace(eventName) && ndm == null)
             {
@@ -1069,7 +1215,7 @@ namespace OrganizationProject
                             list.RemoveNote(model.Note);
 
                 // ── Remove from Long Text documents
-                foreach (var doc in _textModule.Documents)
+                foreach (var doc in TextModule.Documents)
                     if (doc.Notes.Any(a => a.AssignedNote == model.Note))
                         doc.RemoveNote(model.Note);
 
@@ -1099,26 +1245,85 @@ namespace OrganizationProject
         }
 
         /// Build the module-badge string for every note
+        /// <summary>
+        /// Build the module-badge string and detailed instance info for every note
+        /// </summary>
         private void RefreshNoteBadges()
         {
+            _noteModuleDetails.Clear();
+            
             foreach (var ndm in _displayNotes)
             {
                 var badges = new System.Collections.Generic.List<string>();
+                var details = new System.Collections.Generic.List<NoteModuleDetail>();
 
-                // Calendar
-                if (_allEvents.Any(ev => ev.Note == ndm.Note))
+                // Calendar events
+                var calEvents = _allEvents.Where(ev => ev.Note == ndm.Note).ToList();
+                if (calEvents.Any())
+                {
                     badges.Add("📅 Calendar");
+                    foreach (var ev in calEvents)
+                    {
+                        details.Add(new NoteModuleDetail
+                        {
+                            ModuleIcon = "📅",
+                            ModuleName = "Calendar",
+                            ModuleInstance = ev,
+                            InstanceName = $"{ev.DisplayName} ({ev.DateLabel})"
+                        });
+                    }
+                }
 
                 // Lists
-                if (App.Data.allLists != null &&
-                    App.Data.allLists.Any(l => l.Notes.Any(ln => ln.note == ndm.Note)))
-                    badges.Add("✅ List");
+                if (App.Data.allLists != null)
+                {
+                    var assignedLists = App.Data.allLists
+                        .Where(l => l.Notes.Any(ln => ln.note == ndm.Note))
+                        .ToList();
+                        
+                    if (assignedLists.Any())
+                    {
+                        badges.Add("✅ List");
+                        foreach (var list in assignedLists)
+                        {
+                            string listName = _listNames.TryGetValue(list, out var name) 
+                                ? name 
+                                : (ReferenceEquals(list, DataHolder.unassignedNotesList) 
+                                    ? "📝 Unassigned Notes" 
+                                    : "Unnamed List");
+                            details.Add(new NoteModuleDetail
+                            {
+                                ModuleIcon = "✅",
+                                ModuleName = "List",
+                                ModuleInstance = list,
+                                InstanceName = listName
+                            });
+                        }
+                    }
+                }
 
-                // Long Text
-                if (_textModule.Documents.Any(d => d.Notes.Any(a => a.AssignedNote == ndm.Note)))
+                // Long Text documents
+                var assignedDocs = TextModule.Documents
+                    .Where(d => d.Notes.Any(a => a.AssignedNote == ndm.Note))
+                    .ToList();
+                    
+                if (assignedDocs.Any())
+                {
                     badges.Add("📄 Long Text");
+                    foreach (var doc in assignedDocs)
+                    {
+                        details.Add(new NoteModuleDetail
+                        {
+                            ModuleIcon = "📄",
+                            ModuleName = "Long Text",
+                            ModuleInstance = doc,
+                            InstanceName = doc.Title
+                        });
+                    }
+                }
 
                 ndm.ModuleAssignments = badges.Count > 0 ? string.Join("  ·  ", badges) : "";
+                _noteModuleDetails[ndm.Note] = details;
             }
         }
 
@@ -1129,9 +1334,24 @@ namespace OrganizationProject
             _listWrappers.Clear();
             if (App.Data.allLists == null) return;
 
+            // Add the unassigned notes list first with a special name
+            if (DataHolder.unassignedNotesList != null)
+            {
+                _listWrappers.Add(new ListModuleWrapper(
+                    DataHolder.unassignedNotesList, 
+                    "📝 Unassigned Notes"
+                ));
+            }
+
+            // Add all user lists
             for (int i = 0; i < App.Data.allLists.Count; i++)
             {
                 var module = App.Data.allLists[i];
+                
+                // Skip the unassigned list (already added above)
+                if (ReferenceEquals(module, DataHolder.unassignedNotesList))
+                    continue;
+                    
                 // Use stored name; fall back to "List N" for lists loaded without a name
                 if (!_listNames.TryGetValue(module, out var name))
                     name = $"List {i + 1}";
@@ -1195,6 +1415,13 @@ namespace OrganizationProject
 
             var target = _listWrappers[_activeListIdx].Module;
 
+            // Prevent deletion of unassigned notes list
+            if (ReferenceEquals(target, DataHolder.unassignedNotesList))
+            {
+                ShowStatus("Cannot delete the Unassigned Notes list.", false);
+                return;
+            }
+
             // remove note references to this list, then delete
             foreach (var ln in target.Notes.ToList())
                 target.RemoveNote(ln.note);
@@ -1208,6 +1435,21 @@ namespace OrganizationProject
             ShowStatus("List deleted.", false);
         }
 
+        private void BtnShowAdvanced_Click(object sender, RoutedEventArgs e)
+        {
+            // Toggle visibility of advanced task options
+            if (PanelAdvancedTaskOptions.Visibility == Visibility.Collapsed)
+            {
+                PanelAdvancedTaskOptions.Visibility = Visibility.Visible;
+                BtnShowAdvanced.Content = "⚙ Hide Advanced";
+            }
+            else
+            {
+                PanelAdvancedTaskOptions.Visibility = Visibility.Collapsed;
+                BtnShowAdvanced.Content = "⚙ Advanced";
+            }
+        }
+
         private void BtnAddTask_Click(object sender, RoutedEventArgs e)
         {
             if (ActiveList == null) { ShowStatus("No list selected.", false); return; }
@@ -1217,14 +1459,25 @@ namespace OrganizationProject
                 return;
             }
 
-            // Index 0 = None (no priority set), 1 = High, 2 = Medium, 3 = Low
-            bool hasPriority = CboPriority.SelectedIndex > 0;
-            ListPriority priority = CboPriority.SelectedIndex switch
+            // Determine priority from radio buttons
+            ListPriority priority = ListPriority.None;
+            bool hasPriority = false;
+            
+            if (RbPriorityHigh?.IsChecked == true)
             {
-                1 => ListPriority.High,
-                3 => ListPriority.Low,
-                _ => ListPriority.Medium
-            };
+                priority = ListPriority.High;
+                hasPriority = true;
+            }
+            else if (RbPriorityMedium?.IsChecked == true)
+            {
+                priority = ListPriority.Medium;
+                hasPriority = true;
+            }
+            else if (RbPriorityLow?.IsChecked == true)
+            {
+                priority = ListPriority.Low;
+                hasPriority = true;
+            }
 
             var note = new Note(TxtNewTask.Text.Trim());
             App.Data.addNote(note);
@@ -1249,7 +1502,7 @@ namespace OrganizationProject
             });
 
             TxtNewTask.Clear();
-            CboPriority.SelectedIndex    = 0;
+            RbPriorityNone.IsChecked = true; // Reset to "None"
             TxtTaskValidation.Visibility = Visibility.Collapsed;
             RefreshTaskList();
             RefreshNoteList();
@@ -1338,6 +1591,173 @@ namespace OrganizationProject
             ActiveList.Notes.Insert(idx + 1, item);
             CboSort.SelectedIndex = 0;
             RefreshTaskList();
+        }
+
+
+        // PRIORITY MANAGEMENT - Change task priority
+        private ListNoteViewModel? _currentPriorityTask = null;
+
+
+        /// Show the priority change panel for a task
+        private void BtnChangePriority_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.Tag is not ListNoteViewModel vm) return;
+
+            _currentPriorityTask = vm;
+            TxtPriorityChangeTask.Text = $"Change priority for: {vm.TaskName}";
+            PanelPriorityChange.Visibility = Visibility.Visible;
+        }
+
+  
+        /// Close the priority change panel without making changes
+        private void BtnClosePriorityChange_Click(object sender, RoutedEventArgs e)
+        {
+            PanelPriorityChange.Visibility = Visibility.Collapsed;
+            _currentPriorityTask = null;
+        }
+
+        private void BtnSetPriorityNone_Click(object sender, RoutedEventArgs e)
+        {
+            SetTaskPriority(ListPriority.None);
+        }
+
+        private void BtnSetPriorityHigh_Click(object sender, RoutedEventArgs e)
+        {
+            SetTaskPriority(ListPriority.High);
+        }
+
+        private void BtnSetPriorityMedium_Click(object sender, RoutedEventArgs e)
+        {
+            SetTaskPriority(ListPriority.Medium);
+        }
+
+        private void BtnSetPriorityLow_Click(object sender, RoutedEventArgs e)
+        {
+            SetTaskPriority(ListPriority.Low);
+        }
+
+
+        /// Helper to set priority and refresh UI
+        private void SetTaskPriority(ListPriority priority)
+        {
+            if (_currentPriorityTask == null || ActiveList == null) return;
+
+            int idx = ActiveList.Notes.IndexOf(_currentPriorityTask.Source);
+            if (idx >= 0)
+            {
+                ActiveList.ChangePriority(idx, priority);
+                _currentPriorityTask.Notify(nameof(_currentPriorityTask.PriorityMarker));
+                _currentPriorityTask.Notify(nameof(_currentPriorityTask.PriorityVisible));
+                _currentPriorityTask.Notify(nameof(_currentPriorityTask.PriorityColor));
+                _currentPriorityTask.Notify(nameof(_currentPriorityTask.PriorityBackground));
+                
+                string priorityText = priority switch
+                {
+                    ListPriority.High => "High",
+                    ListPriority.Medium => "Medium",
+                    ListPriority.Low => "Low",
+                    _ => "None"
+                };
+                
+                ShowStatus($"Priority changed to: {priorityText}", true);
+            }
+
+            PanelPriorityChange.Visibility = Visibility.Collapsed;
+            _currentPriorityTask = null;
+            RefreshTaskList();
+        }
+
+        // MODULE NAVIGATION - Show where notes are used and navigate to them 
+
+        /// Show the module details panel when clicking a note's module badge
+        private void BtnShowModuleDetails_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.Tag is not NoteDisplayModel ndm) return;
+
+            // Get the detailed module list for this note
+            if (!_noteModuleDetails.TryGetValue(ndm.Note, out var details))
+            {
+                ShowStatus("No module details found for this note.", false);
+                return;
+            }
+
+            // Populate the detail panel
+            TxtSelectedNoteName.Text = $"📝 {ndm.Note.name}";
+            _moduleDetails.Clear();
+            foreach (var detail in details)
+            {
+                _moduleDetails.Add(detail);
+            }
+
+            TxtNoModuleDetails.Visibility = details.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            PanelModuleDetails.Visibility = Visibility.Visible;
+        }
+
+
+        /// Close the module details panel
+        private void BtnCloseModuleDetails_Click(object sender, RoutedEventArgs e)
+        {
+            PanelModuleDetails.Visibility = Visibility.Collapsed;
+            _moduleDetails.Clear();
+        }
+
+
+        /// Navigate to the specific module instance when clicking a detail item
+        private void BtnNavigateToModule_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.Tag is not NoteModuleDetail detail) return;
+
+            // Close the details panel
+            PanelModuleDetails.Visibility = Visibility.Collapsed;
+
+            // Navigate based on module type
+            switch (detail.ModuleName)
+            {
+                case "Calendar":
+                    NavCalendar.IsChecked = true;
+                    if (detail.ModuleInstance is CalendarEntry ev)
+                    {
+                        // Set the calendar to show this event's date
+                        _displayMonth = new DateTime(ev.Date.Year, ev.Date.Month, 1);
+                        _rangeStart = ev.Date;
+                        _rangeEnd = ev.EndDate.Date == ev.Date.Date ? null : ev.EndDate;
+                        BuildCalendarGrid();
+                        PanelSelectedDay.Visibility = Visibility.Visible;
+                        UpdateSelectedDateLabel();
+                        RefreshDayEvents();
+                    }
+                    ShowStatus($"Navigated to {detail.InstanceName}", true);
+                    break;
+
+                case "List":
+                    NavList.IsChecked = true;
+                    if (detail.ModuleInstance is ListModule list)
+                    {
+                        // Find and select this list
+                        for (int i = 0; i < _listWrappers.Count; i++)
+                        {
+                            if (ReferenceEquals(_listWrappers[i].Module, list))
+                            {
+                                _activeListIdx = i;
+                                CboLists.SelectedIndex = i;
+                                RefreshTaskList();
+                                break;
+                            }
+                        }
+                    }
+                    ShowStatus($"Navigated to {detail.InstanceName}", true);
+                    break;
+
+                case "Long Text":
+                    NavLongText.IsChecked = true;
+                    if (detail.ModuleInstance is TextDocument doc)
+                    {
+                        // Select this document in the list
+                        LbLtDocuments.SelectedItem = doc;
+                    }
+                    ShowStatus($"Opened document: {detail.InstanceName}", true);
+                    break;
+            }
         }
         }
 }
