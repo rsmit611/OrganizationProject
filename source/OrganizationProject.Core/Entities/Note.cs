@@ -40,8 +40,7 @@ namespace OrganizationProject.Core.Entities
                 assignedLists.Add(list);
             }
 
-            // 🔥 THIS IS THE IMPORTANT LINE
-            list.dataHolder?.UpdateUnassignedNotesList();
+            checkAllModules();
         }
         public void assign(Calendar calendar)
         {
@@ -98,13 +97,26 @@ namespace OrganizationProject.Core.Entities
 
         private void checkAllModules()
         {
-            if (assignedLists.Count == 0 && assignedCalendars.Count == 0 && assignedTexts.Count == 0)
+            bool hasAssignments =
+                assignedLists.Count > 0 ||
+                assignedCalendars.Count > 0 ||
+                assignedTexts.Count > 0;
+
+            bool isInUnassigned =
+                DataHolder.unassignedNotesList.Notes.Any(n => n.note == this);
+
+            if (!hasAssignments)
             {
-                DataHolder.unassignedNotesList.AddNote(this);
+                if (!isInUnassigned)
+                {
+                    DataHolder.unassignedNotesList.AddNote(this);
+                }
             }
-            else if (assignedLists.Contains(DataHolder.unassignedNotesList) && (assignedLists.Count >= 2 || assignedCalendars.Count >= 1 || assignedTexts.Count >= 1))
+            else
             {
-                DataHolder.unassignedNotesList.RemoveNote(this);
+                // 🔥 DO NOT call RemoveNote (causes recursion)
+                DataHolder.unassignedNotesList.Notes
+                    .RemoveAll(n => n.note == this);
             }
         }
     }
