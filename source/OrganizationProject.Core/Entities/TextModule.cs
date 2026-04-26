@@ -6,37 +6,23 @@ using System.Text.RegularExpressions;
 
 public class TextModule
 {
-    private List<TextDocument> documents;
+    private readonly DataHolder holder;
     private const int MaxDocuments = 150; //Our minimum is 100, so I just went 50% more
 
-    //For the data holder to get and save all the documents
-    public List<TextDocument> GetAllDocuments(){
-        return documents;
-    }
-    public void SetAllDocuments(List<TextDocument> texts)
+    public TextModule(DataHolder data)
     {
-        documents = texts;
-    }
-
-    //For the data holder to load all documents into a fresh module.
-    public void SetDocuments(List<TextDocument> docs){
-        documents = docs ?? new List<TextDocument>();
-    }
-
-    public TextModule()
-    {
-        //The list of documents for the module to have. We will only have one instantiated module, so this will be for the whole application
-        documents = new List<TextDocument>();
+        //The data holder will hold all the text documents, so this pairing is vital
+        holder = data;
     }
 
     //Adds a new document. Returns false if max documents reached or title exists
     public bool AddDocument(TextDocument doc)
     {
         if (doc == null) throw new ArgumentNullException(nameof(doc));
-        if (documents.Count >= MaxDocuments) return false;
-        if (documents.Exists(d => d.Title == doc.Title)) return false;
+        if (holder.allTextDocuments.Count >= MaxDocuments) return false;
+        if (holder.allTextDocuments.Exists(d => d.Title == doc.Title)) return false;
 
-        documents.Add(doc);
+        holder.allTextDocuments.Add(doc);
         return true;
     }
 
@@ -44,32 +30,32 @@ public class TextModule
     public void RemoveDocument(TextDocument doc)
     {
         if (doc == null) throw new ArgumentNullException(nameof(doc));
-        documents.Remove(doc);
+        holder.allTextDocuments.Remove(doc);
     }
 
     //Removes document by index
     public void RemoveDocument(int index)
     {
-        if (index < 0 || index >= documents.Count)
+        if (index < 0 || index >= holder.allTextDocuments.Count)
             throw new ArgumentOutOfRangeException(nameof(index));
-        documents.RemoveAt(index);
+        holder.allTextDocuments.RemoveAt(index);
     }
 
     //Retrieves document by title. If the document doesn't exist, it returns null
     public TextDocument? GetDocument(string title)
     {
-        return documents.Find(d => d.Title == title);
+        return holder.allTextDocuments.Find(d => d.Title == title);
     }
 
     //Retrieves document by index.
     public TextDocument GetDocument(int index){
-        if (index < 0 || index >= documents.Count)
+        if (index < 0 || index >= holder.allTextDocuments.Count)
             throw new ArgumentOutOfRangeException(nameof(index));
-        return documents[index];
+        return holder.allTextDocuments[index];
     }
 
     //List of documents
-    public IReadOnlyList<TextDocument> Documents => documents;
+    public IReadOnlyList<TextDocument> Documents => holder.allTextDocuments;
 }
 
 //long-form document class

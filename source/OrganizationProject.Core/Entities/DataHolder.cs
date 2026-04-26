@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OrganizationProject.Core.Entities
 {
@@ -12,7 +13,9 @@ namespace OrganizationProject.Core.Entities
 
         public List<ListModule> allLists;
         public List<Note> allNotes;
-        public List<TextDocument> allTextModules => textModule.GetAllDocuments();
+        public List<TextDocument> allTextDocuments;
+
+        [JsonIgnore]
         public TextModule textModule;
 
         public List<Calendar> allCalendars; 
@@ -24,6 +27,16 @@ namespace OrganizationProject.Core.Entities
         public int backupCycle = 0;
         public int maxBackups = 5;
 
+        [JsonIgnore]
+        public IReadOnlyList<ListModule> AllLists => allLists.AsReadOnly();
+        [JsonIgnore]
+        public IReadOnlyList<Note> AllNotes => allNotes.AsReadOnly();
+        [JsonIgnore]
+        public IReadOnlyList<TextDocument> AllTextDocuments => allTextDocuments.AsReadOnly();
+        [JsonIgnore]
+        public IReadOnlyList<Calendar> AllCalendars => allCalendars.AsReadOnly();
+
+
         public DataHolder()
         {
             timeSinceLastSave = 0f;
@@ -31,27 +44,75 @@ namespace OrganizationProject.Core.Entities
             allLists = new List<ListModule>();
             allNotes = new List<Note>();
             allCalendars = new List<Calendar>();
+            allTextDocuments = new List<TextDocument>();
             unassignedNotesList = new ListModule();
-            textModule = new TextModule();
+            textModule = new TextModule(this);
         }
 
         public void copy(DataHolder other)
         {
             if (other == null) throw new ArgumentNullException(nameof(other));
+
             timeSinceLastSave = other.timeSinceLastSave;
             timeSinceLastBackup = other.timeSinceLastBackup;
-            allLists = (List<ListModule>)other.AllLists;
-            allNotes = (List<Note>)other.AllNotes;
-            allCalendars = (List<Calendar>)other.AllCalendars;
-            textModule.SetAllDocuments((List<TextDocument>)other.AllTextModules);
+
+            allLists = other.allLists ?? new List<ListModule>();
+            allNotes = other.allNotes ?? new List<Note>();
+            allCalendars = other.allCalendars ?? new List<Calendar>();
+            allTextDocuments = other.allTextDocuments ?? new List<TextDocument>();
+
             backupCycle = other.backupCycle;
+
             UnassignedNotesList = other.UnassignedNotesList;
+            unassignedNotesList = UnassignedNotesList;
+            maxBackups = other.maxBackups;
+
+            textModule = new TextModule(this);
         }
 
-        public IReadOnlyList<ListModule> AllLists => allLists.AsReadOnly();
-        public IReadOnlyList<Note> AllNotes => allNotes.AsReadOnly();
-        public IReadOnlyList<TextDocument> AllTextModules => allTextModules.AsReadOnly();
-        public IReadOnlyList<Calendar> AllCalendars => allCalendars.AsReadOnly();
+        //replacing copy because I don't think it's working
+        private void ApplyLoadedData(DataHolder loaded)
+        {
+            allNotes.Clear();
+            foreach (var n in loaded.allNotes)
+                allNotes.Add(n);
+
+            allLists.Clear();
+            foreach (var l in loaded.allLists)
+                allLists.Add(l);
+
+            allTextDocuments.Clear();
+            foreach (var t in loaded.allTextDocuments)
+                allTextDocuments.Add(t);
+
+            allCalendars.Clear();
+            foreach (var c in loaded.allCalendars)
+                allCalendars.Add(c);
+
+            UnassignedNotesList = loaded.UnassignedNotesList;
+            unassignedNotesList = UnassignedNotesList;
+
+            textModule = new TextModule(this);
+
+            RebuildRelationships();
+        }
+
+        //Relationships are fun
+        private void RebuildRelationships()
+        {
+            foreach (var note in allNotes)
+            {
+                if (note.assignedLists == null)
+                    note.assignedLists = new();
+
+                if (note.assignedTexts == null)
+                    note.assignedTexts = new();
+
+                if (note.assignedCalendars == null)
+                    note.assignedCalendars = new();
+            }
+        }
+
 
 
         public void save()
@@ -59,24 +120,52 @@ namespace OrganizationProject.Core.Entities
             timeSinceLastSave = 0f;
             UnassignedNotesList = unassignedNotesList;
             string path = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
                 "OmniNote", "save.txt");
-            File.WriteAllText(path, JsonSerializer.Serialize<DataHolder>(this));
+
+            string directory = Path.GetDirectoryName(path);
+
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            var options = new JsonSerializerOptions
+            {
+                IncludeFields = true,
+                ReferenceHandler = ReferenceHandler.Preserve,
+                WriteIndented = true
+            };
+
+            File.WriteAllText(path, JsonSerializer.Serialize(this, options));
         }
 
         public void load()
         {
             string path = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "OmniNote", "OmniSave.txt");
-            load(path);
+                "OmniNote", "save.txt");
+
+            if (!File.Exists(path)){
+                //Nothing exists to load.
+            }else{
+                load(path);
+            }
         }
 
         public void load(string location)
         {
-            var loaded = JsonSerializer.Deserialize<DataHolder>(location);
-            if (loaded != null) copy(loaded);
-            timeSinceLastSave = 0f;
+            var data = File.ReadAllText(location);
+            var options = new JsonSerializerOptions
+            {
+                IncludeFields = true,
+                ReferenceHandler = ReferenceHandler.Preserve,
+                WriteIndented = true
+            };
+            var loaded = JsonSerializer.Deserialize<DataHolder>(data, options);
+            if (loaded != null)
+            {
+                ApplyLoadedData(loaded);
+            }
         }
 
         public void backup()
@@ -125,13 +214,13 @@ namespace OrganizationProject.Core.Entities
         public void addTextDocument(TextDocument doc)
         {
             if (doc == null) throw new ArgumentNullException(nameof(doc));
-            textModule.AddDocument(doc);
+            allTextDocuments.Add(doc);
         }
 
         public void removeTextDocument(TextDocument doc)
         {
             if (doc == null) throw new ArgumentNullException(nameof(doc));
-            textModule.RemoveDocument(doc);
+            allTextDocuments.Remove(doc);
             foreach (var note in allNotes)
                 note.remove(doc);
         }

@@ -158,7 +158,7 @@ namespace OrganizationProject
         private readonly Dictionary<ListModule, string> _listNames = new();
 
         // ── Long Text state 
-        private readonly TextModule _textModule       = new();
+        private TextModule          _textModule     => App.Data.textModule;
         private TextDocument?       _activeLtDoc      = null;
         private bool                _highlightsVisible = true;
         private bool                _ltSuppressSync   = false;
@@ -454,7 +454,7 @@ namespace OrganizationProject
         }
 
         /// Sync current RichTextBox content back to the TextDocument
-        private void CommitEditorToDocument()
+        public void CommitEditorToDocument()
         {
             if (_activeLtDoc == null) return;
 

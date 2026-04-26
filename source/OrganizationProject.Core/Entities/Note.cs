@@ -5,13 +5,13 @@ namespace OrganizationProject.Core.Entities
 {
     public class Note
     {
-        public Guid id { get; init; } = Guid.NewGuid();
+        public Guid id { get; set; } = Guid.NewGuid();
         public string name { get; set; }
         public string description { get; set; } = "";
         public string color { get; set; } = "White";
-        public List<ListModule> assignedLists { get; private set; }
-        public List<TextDocument> assignedTexts { get; private set; }
-        public List<Calendar> assignedCalendars;
+        public List<ListModule> assignedLists { get; set; } = new();
+        public List<TextDocument> assignedTexts { get; set; } = new();
+        public List<Calendar> assignedCalendars { get; set; } = new();
         public Note(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -23,6 +23,13 @@ namespace OrganizationProject.Core.Entities
             assignedCalendars = new List<Calendar>();
             assignedTexts = new List<TextDocument>();
             DataHolder.unassignedNotesList.AddNote(this);
+        }
+
+        public Note()
+        {
+            assignedLists = new List<ListModule>();
+            assignedTexts = new List<TextDocument>();
+            assignedCalendars = new List<Calendar>();
         }
 
         //These will be called by the modules themselves so no duplicate protection is necessary
