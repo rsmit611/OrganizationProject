@@ -258,7 +258,7 @@ namespace OrganizationProject
             }
 
             // Sync text documents
-            foreach (var doc in App.Data.AllTextModules)
+            foreach (var doc in App.Data.AllTextDocuments)
             {
                 _ltDocuments.Add(doc);
             }
