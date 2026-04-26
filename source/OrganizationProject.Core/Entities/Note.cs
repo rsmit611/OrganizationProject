@@ -89,11 +89,11 @@ namespace OrganizationProject.Core.Entities
 
         private void checkAllModules()
         {
-            if (assignedLists.Count == 0)
+            if (assignedLists.Count == 0 && assignedCalendars.Count == 0 && assignedTexts.Count == 0)
             {
                 DataHolder.unassignedNotesList.AddNote(this);
             }
-            else if (assignedLists.Count >= 1 + (assignedLists.Contains(DataHolder.unassignedNotesList) ? 1 : 0))
+            else if (assignedLists.Contains(DataHolder.unassignedNotesList) && (assignedLists.Count >= 2 || assignedCalendars.Count >= 1 || assignedTexts.Count >= 1))
             {
                 DataHolder.unassignedNotesList.RemoveNote(this);
             }
