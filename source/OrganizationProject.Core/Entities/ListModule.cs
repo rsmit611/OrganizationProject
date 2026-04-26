@@ -8,6 +8,7 @@ namespace OrganizationProject.Core.Entities
 {
     public class ListModule
     {
+        public Guid Id { get; } = Guid.NewGuid();
         List<ListNote> notes;
         public List<ListNote> Notes => notes;
         public ListModule()
@@ -60,12 +61,19 @@ namespace OrganizationProject.Core.Entities
         //Takes a note from one position and puts it in another. For moving notes.
         public void moveTo(int fromIndex, int toIndex)
         {
-            //don't do anything if indexes are the same
-            if (fromIndex == toIndex) { return; }
-            //copy the note from the index to the index
-            notes[toIndex] = notes[fromIndex];
-            //remove at the old index. Add one if the to index is before from index so we hit the right one
-            notes.RemoveAt(toIndex + fromIndex > toIndex ? 1 : 0);
+            if (fromIndex < 0 || fromIndex >= notes.Count || toIndex < 0 || toIndex >= notes.Count)
+            {
+                throw new ArgumentException("Move note: index out of range");
+            }
+
+            if (fromIndex == toIndex)
+            {
+                return;
+            }
+
+            ListNote movingNote = notes[fromIndex];
+            notes.RemoveAt(fromIndex);
+            notes.Insert(toIndex, movingNote);
         }
         //changes priority at index. throws an argument exception if index is out of range(note, that shouldn't ever happen)
         public void ChangePriority(int noteIndex, ListPriority priority)

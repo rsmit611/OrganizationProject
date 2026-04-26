@@ -27,7 +27,7 @@ namespace OrganizationProject.Core.Entities
 
             var calendarNote = new CalendarNote(note, date, time, repeating);
             Notes.Add(calendarNote);
-            note.Assign(this); //Assign the calendar to the note 
+            note.assign(this); //Assign the calendar to the note 
             return true;
         }
 
@@ -41,14 +41,10 @@ namespace OrganizationProject.Core.Entities
                 {
                     calendarNote.CancelNotification();
                 }//Cancels notification if one is set for the note.
-                note.Remove(this);
+                note.remove(this);
             }
         }
-<<<<<<< HEAD
         public IEnumerable<CalendarNote> GetNotesOrganizedByDateTime()
-=======
-        public IEnumerable<CalendarNote> GetNotesSortedByDate()
->>>>>>> 7b0f478 (update projecy)
         {
             return Notes.OrderBy(cn => cn.Date).ThenBy(cn => cn.Time);
         }
@@ -102,13 +98,8 @@ namespace OrganizationProject.Core.Entities
         public TimeSpan? Time { get; set; }  // null = no time assigned 
         public bool IsScheduled { get; set; } = false;
         public Repeating? Repeating { get; private set; }
-<<<<<<< HEAD
         public DateTime? NotificationDate { get; set; }
         public TimeSpan? NotificationTime { get; set; }
-=======
-        public DateTime? NotificationDate { get; private set; }
-        public TimeSpan? NotificationTime { get; private set; }
->>>>>>> 7b0f478 (update projecy)
 
         public CalendarNote(Note baseNote, DateTime? date, TimeSpan? time, RepeatingType? repeatingType = null)
         {
@@ -153,22 +144,6 @@ namespace OrganizationProject.Core.Entities
             NotificationTime = null;
         }
 
-<<<<<<< HEAD
-
-        public void SetRepeatingSchedule(RepeatingType type, List<DayOfWeek>? daysOfWeek = null, int interval = 1)
-        {
-            Repeating = new Repeating
-            {
-                Type = type,
-                daysOfWeek = daysOfWeek ?? new List<DayOfWeek>(),
-                interval = interval
-            };
-        }
-
-        public void RemoveRepeatingSchedule()
-        {
-            Repeating = null;
-=======
 
         public void SetRepeatingSchedule(RepeatingType type, List<DayOfWeek>? daysOfWeek = null, int interval = 1)
         {
@@ -180,64 +155,9 @@ namespace OrganizationProject.Core.Entities
             };
         }
 
-        public void RemoveRepeatingSchedule() => Repeating = null;
-
-        public IEnumerable<DateTime> GetOccurancesInRange(DateTime start, DateTime end)
+        public void RemoveRepeatingSchedule()
         {
-            if (!Date.HasValue || Repeating == null || Repeating.Type == RepeatingType.None)
-            {
-                if (Date.HasValue && Date.Value >= start && Date.Value <= end)
-                {
-                    yield return Date.Value;
-                    
-                }
-                yield break;
-            }
-
-            var current = Date.Value;
-
-            while (current <= end)
-            {
-                if (current >= start)
-                {
-                    yield return current;
-                }
-
-                current = Repeating.Type switch
-                {
-                    RepeatingType.Daily =>
-                    current.AddDays(Repeating.Interval),
-
-                    RepeatingType.Weekly =>
-                    current.AddDays(7 * Repeating.Interval),
-
-                    RepeatingType.Monthly =>
-                   current.AddMonths(Repeating.Interval),
-
-                    RepeatingType.Yearly =>
-                    current.AddYears(Repeating.Interval),
-
-                    RepeatingType.SpecificDays =>
-                        GetNextSpecificDay(current),
-
-                    _ => end.AddDays(1) //Stops loop
-
-                };
-            }
-        }
-
-        private DateTime GetNextSpecificDay(DateTime from)
-        {
-            if (Repeating == null || !Repeating.DaysOfWeek.Any())
-                return from.AddDays(1);
-
-            var next = from.AddDays(1);
-
-            while (!Repeating.DaysOfWeek.Contains(next.DayOfWeek))
-                next = next.AddDays(1);
-
-            return next;
->>>>>>> 7b0f478 (update projecy)
+            Repeating = null;
         }
     }
     public class Repeating
@@ -255,54 +175,23 @@ namespace OrganizationProject.Core.Entities
         private readonly List<Calendar> _calendars = new();
 
         public IReadOnlyList<Calendar> Calendars => _calendars.AsReadOnly();
-<<<<<<< HEAD
-=======
+
         public Calendar CreateCalendar(string name)
         {
             if (_calendars.Count >= MaxCalendars)
-            {
-                throw new InvalidOperationException(
-                    $"Cannot create more than {MaxCalendars} calendars.");
-            }
->>>>>>> 7b0f478 (update projecy)
-
+                throw new InvalidOperationException($"Cannot create more than {MaxCalendars} calendars.");
             var calendar = new Calendar(name);
             _calendars.Add(calendar);
             return calendar;
         }
-<<<<<<< HEAD
-
-        //commented out because this errors because it doesn't make any sense
-
-            //public CreateManager(string name)
-            //{
-            //    var calendars = new Calendar(name);
-            //    _calendars.Add(calendar);
-            //    return calendar;
-            //}
-
-
-            public Calendar CreateCalendar(string name)
-            {
-                var calendar = new Calendar(name); //adds calendar 
-                _calendars.Add(calendar);
-                return calendar;
-            }
-
-=======
->>>>>>> 7b0f478 (update projecy)
 
         public void DeleteCalendar(Guid id)
         {
             var cal = _calendars.FirstOrDefault(cal => cal.Id == id)
                 ?? throw new KeyNotFoundException();
 
-<<<<<<< HEAD
-            //foreach (var calendarNote in cal.Notes.ToList())
-=======
             foreach (var calendarNote in cal.Notes.ToList())
-                calendarNote.Note.Remove(cal);
->>>>>>> 7b0f478 (update projecy)
+                calendarNote.Note.remove(cal);
 
             _calendars.Remove(cal);
         }

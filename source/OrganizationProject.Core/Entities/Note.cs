@@ -9,15 +9,9 @@ namespace OrganizationProject.Core.Entities
         public string name { get; set; }
         public string description { get; set; } = "";
         public string color { get; set; } = "White";
-<<<<<<< HEAD
         public List<ListModule> assignedLists { get; set; } = new();
         public List<TextDocument> assignedTexts { get; set; } = new();
         public List<Calendar> assignedCalendars { get; set; } = new();
-=======
-        public List<ListModule> assignedLists { get; private set; }
-        public List<TextDocument> assignedTexts { get; private set; }
-        public List<CalendarModule> assignedCalendars { get; private set; }
->>>>>>> 7b0f478 (update projecy)
         public Note(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -41,18 +35,15 @@ namespace OrganizationProject.Core.Entities
         //These will be called by the modules themselves so no duplicate protection is necessary
         public void assign(ListModule list)
         {
-            assignedLists.Add(list);
-            checkAllModules();
+            if (!assignedLists.Contains(list))
+            {
+                assignedLists.Add(list);
+            }
+
+            // 🔥 THIS IS THE IMPORTANT LINE
+            list.dataHolder?.UpdateUnassignedNotesList();
         }
-<<<<<<< HEAD
         public void assign(Calendar calendar)
-=======
-
-        public IReadOnly<ListModule> GetsLists() => assignedLists.AsReadOnly();
-        public IReadOnly<CalendarModule> GetsCalendars() => assignedCalendars.AsReadOnly();
-
-        public void assign(CalendarModule calendar)
->>>>>>> 7b0f478 (update projecy)
         {
             assignedCalendars.Add(calendar);
             checkAllModules();
@@ -61,6 +52,8 @@ namespace OrganizationProject.Core.Entities
         {
             assignedTexts.Add(text);
         }
+
+        public IReadOnlyList<ListModule> GetLists() => assignedLists.AsReadOnly();
 
         public void remove(ListModule list)
         {
@@ -90,6 +83,7 @@ namespace OrganizationProject.Core.Entities
             this.color = color;
             assignedLists = new List<ListModule>();
             assignedTexts = new List<TextDocument>();
+            assignedCalendars = new List<Calendar>();
             DataHolder.unassignedNotesList.AddNote(this);
         }
         public void unassignAll()

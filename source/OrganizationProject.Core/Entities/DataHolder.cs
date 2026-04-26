@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -21,9 +22,8 @@ namespace OrganizationProject.Core.Entities
         public List<Calendar> allCalendars; 
 
 
-        public static ListModule unassignedNotesList;
-        public ListModule? UnassignedNotesList;
-
+        public static ListModule unassignedNotesList = new ListModule();
+        public ListModule? UnassignedNotesList { get; set; }
         public int backupCycle = 0;
         public int maxBackups = 5;
 
@@ -45,8 +45,47 @@ namespace OrganizationProject.Core.Entities
             allNotes = new List<Note>();
             allCalendars = new List<Calendar>();
             allTextDocuments = new List<TextDocument>();
+
             unassignedNotesList = new ListModule();
+            UnassignedNotesList = unassignedNotesList;
+
             textModule = new TextModule(this);
+        }
+
+        public void UpdateUnassignedNotesList()
+        {
+            foreach (var note in allNotes)
+            {
+                bool hasRealListAssignment =
+                    note.assignedLists != null &&
+                    note.assignedLists.Any(list => !ReferenceEquals(list, unassignedNotesList));
+
+                bool hasAssignments =
+                    hasRealListAssignment ||
+                    (note.assignedCalendars != null && note.assignedCalendars.Count > 0) ||
+                    (note.assignedTexts != null && note.assignedTexts.Count > 0);
+
+                var existingEntries = unassignedNotesList.Notes
+                    .Where(n => n.note == note)
+                    .ToList();
+
+                if (!hasAssignments)
+                {
+                    if (!existingEntries.Any())
+                    {
+                        note.assign(unassignedNotesList);
+                    }
+                }
+                else
+                {
+                    foreach (var entry in existingEntries)
+                    {
+                        unassignedNotesList.RemoveNote(note);
+                    }
+
+                    note.remove(unassignedNotesList);
+                }
+            }
         }
 
         public void copy(DataHolder other)
@@ -132,7 +171,7 @@ namespace OrganizationProject.Core.Entities
             var options = new JsonSerializerOptions
             {
                 IncludeFields = true,
-                ReferenceHandler = ReferenceHandler.Preserve,
+                ReferenceHandler = ReferenceHandler.IgnoreCycles,
                 WriteIndented = true
             };
 
@@ -158,7 +197,7 @@ namespace OrganizationProject.Core.Entities
             var options = new JsonSerializerOptions
             {
                 IncludeFields = true,
-                ReferenceHandler = ReferenceHandler.Preserve,
+                ReferenceHandler = ReferenceHandler.IgnoreCycles,
                 WriteIndented = true
             };
             var loaded = JsonSerializer.Deserialize<DataHolder>(data, options);
@@ -183,14 +222,27 @@ namespace OrganizationProject.Core.Entities
         public void addNote(Note note)
         {
             if (note == null) throw new ArgumentNullException(nameof(note));
-            if (allNotes.Contains(note)) return;
+
+            // Prevent duplicate reference
+            if (allNotes.Any(n => n == note))
+                return;
+
             allNotes.Add(note);
+
+            UpdateUnassignedNotesList();
         }
 
         public void removeNote(Note note)
         {
             if (note == null) throw new ArgumentNullException(nameof(note));
+
             allNotes.Remove(note);
+
+            // Remove from unassigned list if present
+            if (unassignedNotesList.Notes.Any(n => n.note == note))
+            {
+                unassignedNotesList.RemoveNote(note);
+            }
         }
 
         public void addList(ListModule list)
@@ -208,6 +260,8 @@ namespace OrganizationProject.Core.Entities
             if (!allLists.Remove(list)) return;
             foreach (var note in allNotes)
                 note.remove(list);
+
+            UpdateUnassignedNotesList();
         }
 
         // ── TextDocument methods (not TextModule) ──
@@ -223,6 +277,8 @@ namespace OrganizationProject.Core.Entities
             allTextDocuments.Remove(doc);
             foreach (var note in allNotes)
                 note.remove(doc);
+
+            UpdateUnassignedNotesList();
         }
 
         public void addCalendar(Calendar calendar)
@@ -240,6 +296,8 @@ namespace OrganizationProject.Core.Entities
 
             foreach(var calNote in calendar.Notes.ToList())
                 calNote.Note.remove(calendar);
+
+            UpdateUnassignedNotesList();
         }
 
     }
