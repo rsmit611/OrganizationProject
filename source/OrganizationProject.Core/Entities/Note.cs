@@ -9,9 +9,15 @@ namespace OrganizationProject.Core.Entities
         public string name { get; set; }
         public string description { get; set; } = "";
         public string color { get; set; } = "White";
+<<<<<<< HEAD
         public List<ListModule> assignedLists { get; set; } = new();
         public List<TextDocument> assignedTexts { get; set; } = new();
         public List<Calendar> assignedCalendars { get; set; } = new();
+=======
+        public List<ListModule> assignedLists { get; private set; }
+        public List<TextDocument> assignedTexts { get; private set; }
+        public List<CalendarModule> assignedCalendars { get; private set; }
+>>>>>>> 7b0f478 (update projecy)
         public Note(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -38,9 +44,18 @@ namespace OrganizationProject.Core.Entities
             assignedLists.Add(list);
             checkAllModules();
         }
+<<<<<<< HEAD
         public void assign(Calendar calendar)
+=======
+
+        public IReadOnly<ListModule> GetsLists() => assignedLists.AsReadOnly();
+        public IReadOnly<CalendarModule> GetsCalendars() => assignedCalendars.AsReadOnly();
+
+        public void assign(CalendarModule calendar)
+>>>>>>> 7b0f478 (update projecy)
         {
             assignedCalendars.Add(calendar);
+            checkAllModules();
         }
         public void assign(TextDocument text)
         {
@@ -99,4 +114,6 @@ namespace OrganizationProject.Core.Entities
             }
         }
     }
+
+
 }

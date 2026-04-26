@@ -13,6 +13,8 @@ namespace OrganizationProject.Core.Entities
         public DateTime Created { get; } = DateTime.Now;
         public List<CalendarNote> Notes { get; } = new();
 
+        private readonly HashSet<Guid> _hiddenListIds = new(); //toggle visibility of lists in calendar.
+
         public Calendar(string name)
         {
             Name = name;
@@ -25,7 +27,7 @@ namespace OrganizationProject.Core.Entities
 
             var calendarNote = new CalendarNote(note, date, time, repeating);
             Notes.Add(calendarNote);
-            note.assign(this); //Assign the calendar to the note 
+            note.Assign(this); //Assign the calendar to the note 
             return true;
         }
 
@@ -35,14 +37,61 @@ namespace OrganizationProject.Core.Entities
             if (calendarNote != null)
             {
                 Notes.Remove(calendarNote);
-                note.remove(this);
+                if (calendarNote.IsScheduled)
+                {
+                    calendarNote.CancelNotification();
+                }//Cancels notification if one is set for the note.
+                note.Remove(this);
             }
         }
+<<<<<<< HEAD
         public IEnumerable<CalendarNote> GetNotesOrganizedByDateTime()
+=======
+        public IEnumerable<CalendarNote> GetNotesSortedByDate()
+>>>>>>> 7b0f478 (update projecy)
         {
             return Notes.OrderBy(cn => cn.Date).ThenBy(cn => cn.Time);
         }
+
+        public IEnumerable<CalendarNote> GetNotesInRange(DateTime startDate, DateTime endDate)
+        {
+            return Notes.Where(cn => cn.Date.HasValue && cn.Date.Value.Date >=
+            startDate.Date && cn.Date.Value.Date <= endDate.Date)
+                .OrderBy(cn => cn.Date).ThenBy(cn => cn.Time);
+        }
+
+        //List Visisblity 
+        // Hides notes belonging to a specific list 
+        public void HideList(Guid listId) => _hiddenListIds.Add(listId);
+        //shows notes belonging to a specific list
+        public void ShowList(Guid listId) => _hiddenListIds.Remove(listId);
+
+        public void HideAllLists(IEnumerable<ListModule> allLists)
+        {
+
+            foreach (var list in allLists)
+            {
+                _hiddenListIds.Add(list.Id);
+            }
+        }
+        //shows list at once 
+        public void ShowAllLists() => _hiddenListIds.Clear();
+
+        public IEnumerable<CalendarNote> GetVisibleNotes(IEnumerable<ListModule> allLists)
+        {
+            return Notes.Where(cn =>
+            {
+                var noteLists = cn.Note.GetLists();
+                if (!noteLists.Any()) return true;
+
+                return noteLists.Any(l => !_hiddenListIds.Contains(l.Id));
+            });
+        }
+        public bool IsListHidden(Guid listId) => _hiddenListIds.Contains(listId);
+
     }
+
+
 
 
     public class CalendarNote
@@ -53,8 +102,13 @@ namespace OrganizationProject.Core.Entities
         public TimeSpan? Time { get; set; }  // null = no time assigned 
         public bool IsScheduled { get; set; } = false;
         public Repeating? Repeating { get; private set; }
+<<<<<<< HEAD
         public DateTime? NotificationDate { get; set; }
         public TimeSpan? NotificationTime { get; set; }
+=======
+        public DateTime? NotificationDate { get; private set; }
+        public TimeSpan? NotificationTime { get; private set; }
+>>>>>>> 7b0f478 (update projecy)
 
         public CalendarNote(Note baseNote, DateTime? date, TimeSpan? time, RepeatingType? repeatingType = null)
         {
@@ -68,7 +122,23 @@ namespace OrganizationProject.Core.Entities
                 SetRepeatingSchedule(repeatingType.Value);
             }
         }
+        // Date and Time 
+        public void ChangeDate(DateTime newDate) => Date = newDate;
+        public void ChangeTime(TimeSpan newTime) => Time = newTime;
 
+        public void RemoveTime() => Time = null;
+
+        public void RemoveDateTime()
+        {
+            Date = null;
+            Time = null;
+            //warn user when date/time is removed 
+
+            if (IsScheduled)
+            {
+                CancelNotification();
+            }
+        }
         public void ScheduleNotification(DateTime notifyDate, TimeSpan notifyTime)
         {
             IsScheduled = true;
@@ -83,6 +153,7 @@ namespace OrganizationProject.Core.Entities
             NotificationTime = null;
         }
 
+<<<<<<< HEAD
 
         public void SetRepeatingSchedule(RepeatingType type, List<DayOfWeek>? daysOfWeek = null, int interval = 1)
         {
@@ -97,17 +168,85 @@ namespace OrganizationProject.Core.Entities
         public void RemoveRepeatingSchedule()
         {
             Repeating = null;
+=======
+
+        public void SetRepeatingSchedule(RepeatingType type, List<DayOfWeek>? daysOfWeek = null, int interval = 1)
+        {
+            Repeating = new Repeating
+            {
+                Type = type,
+                DaysOfWeek = daysOfWeek ?? new List<DayOfWeek>(),
+                Interval = interval
+            };
+        }
+
+        public void RemoveRepeatingSchedule() => Repeating = null;
+
+        public IEnumerable<DateTime> GetOccurancesInRange(DateTime start, DateTime end)
+        {
+            if (!Date.HasValue || Repeating == null || Repeating.Type == RepeatingType.None)
+            {
+                if (Date.HasValue && Date.Value >= start && Date.Value <= end)
+                {
+                    yield return Date.Value;
+                    
+                }
+                yield break;
+            }
+
+            var current = Date.Value;
+
+            while (current <= end)
+            {
+                if (current >= start)
+                {
+                    yield return current;
+                }
+
+                current = Repeating.Type switch
+                {
+                    RepeatingType.Daily =>
+                    current.AddDays(Repeating.Interval),
+
+                    RepeatingType.Weekly =>
+                    current.AddDays(7 * Repeating.Interval),
+
+                    RepeatingType.Monthly =>
+                   current.AddMonths(Repeating.Interval),
+
+                    RepeatingType.Yearly =>
+                    current.AddYears(Repeating.Interval),
+
+                    RepeatingType.SpecificDays =>
+                        GetNextSpecificDay(current),
+
+                    _ => end.AddDays(1) //Stops loop
+
+                };
+            }
+        }
+
+        private DateTime GetNextSpecificDay(DateTime from)
+        {
+            if (Repeating == null || !Repeating.DaysOfWeek.Any())
+                return from.AddDays(1);
+
+            var next = from.AddDays(1);
+
+            while (!Repeating.DaysOfWeek.Contains(next.DayOfWeek))
+                next = next.AddDays(1);
+
+            return next;
+>>>>>>> 7b0f478 (update projecy)
         }
     }
     public class Repeating
     {
         public RepeatingType Type { get; set; }
-        public List<DayOfWeek> daysOfWeek { get; set; } = new(); // For SpecificDays type
-        public int interval { get; set; } = 1; // For Weekly, Monthly, Yearly types
+        public List<DayOfWeek> DaysOfWeek { get; set; } = new();
+        public int Interval { get; set; } = 1;
     }
-
-
-    public enum RepeatingType { Daily, SpecificDays, Weekly, Monthly, Yearly }
+    public enum RepeatingType {None, Daily, SpecificDays, Weekly, Monthly, Yearly }
 
     public class CalendarRequirements
     {
@@ -116,13 +255,22 @@ namespace OrganizationProject.Core.Entities
         private readonly List<Calendar> _calendars = new();
 
         public IReadOnlyList<Calendar> Calendars => _calendars.AsReadOnly();
+<<<<<<< HEAD
+=======
+        public Calendar CreateCalendar(string name)
+        {
+            if (_calendars.Count >= MaxCalendars)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot create more than {MaxCalendars} calendars.");
+            }
+>>>>>>> 7b0f478 (update projecy)
 
-
-        public class CreateManager { 
-            //checks calendars limit if its at 100 
-            private const int MinimumCapictyRequired = 100;
-            private readonly List<Calendar> _calendars = new();
+            var calendar = new Calendar(name);
+            _calendars.Add(calendar);
+            return calendar;
         }
+<<<<<<< HEAD
 
         //commented out because this errors because it doesn't make any sense
 
@@ -141,28 +289,25 @@ namespace OrganizationProject.Core.Entities
                 return calendar;
             }
 
+=======
+>>>>>>> 7b0f478 (update projecy)
 
         public void DeleteCalendar(Guid id)
         {
             var cal = _calendars.FirstOrDefault(cal => cal.Id == id)
-            ?? throw new KeyNotFoundException(); //checks if calendar exists so it can delete it. if no match throws exception 
+                ?? throw new KeyNotFoundException();
 
-
-
+<<<<<<< HEAD
             //foreach (var calendarNote in cal.Notes.ToList())
+=======
+            foreach (var calendarNote in cal.Notes.ToList())
+                calendarNote.Note.Remove(cal);
+>>>>>>> 7b0f478 (update projecy)
 
-            //might create an error from , we'll see
-            foreach (var calendarNote in cal.Notes)
-
-            {
-                calendarNote.Note.remove(cal); //Sets notes calendar id to empty so they dont belong to a calendar but arent deleted. 
-            }
-
-            _calendars.Remove(cal); //Remvoes the calendar object from the list. 
+            _calendars.Remove(cal);
         }
 
-        public bool AddNote(Guid calendarId, Note note, DateTime? date, TimeSpan? time,
-            RepeatingType? repeating = null)
+        public bool AddNote(Guid calendarId, Note note, DateTime? date, TimeSpan? time, RepeatingType? repeating = null)
         {
             var cal = _calendars.FirstOrDefault(c => c.Id == calendarId)
                 ?? throw new KeyNotFoundException("Calendar not found.");
@@ -170,8 +315,13 @@ namespace OrganizationProject.Core.Entities
             return cal.AddNote(note, date, time, repeating);
         }
 
+
     }
 }
+
+
+            
+      
 
 
 
